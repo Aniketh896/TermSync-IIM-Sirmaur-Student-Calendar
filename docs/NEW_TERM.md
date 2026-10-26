@@ -1,136 +1,134 @@
 # Moving your batch to the next term
 
-Do this once per term: Term 1 → 2 → 3, then (second year) 4 → 5 → 6. It takes about
-**30 minutes**, and **nobody in your batch has to do anything** — their calendars
-move over by themselves.
+Once per term: Term 1 → 2 → 3, then (second year) 4 → 5 → 6. About **30 minutes**.
+**Nobody in your batch has to do anything** — their calendars move over by
+themselves.
 
-Use the **same** spreadsheet and Apps Script project as last term. Don't start a new
-one: keeping the same project keeps the same link, the same permissions and every
-student's automatic sync.
+Use the **same** spreadsheet and Apps Script project as last term. Keeping the same
+project keeps the same link, the same permissions and every student's automatic sync.
 
 > **With an AI assistant:** send it *"Help me move TermSync to the next term. The
-> project is at https://github.com/Aniketh896/TermSync — read README.md and
-> SETUP_WITH_AI.md, then follow part B."*
+> project is at https://github.com/Aniketh896/TermSync-IIM-Sirmaur-Student-Calendar —
+> read README.md and SETUP_WITH_AI.md, then follow part B."* It asks for exactly
+> what's listed below, checks it, and walks you through the steps.
 
-**When:** once the PGP office has put the new term's classes into its timetable
-sheet — usually a few days before classes start.
+**When:** once the PGP office has put the new term's classes in its timetable sheet —
+usually a few days before classes start.
 
 ---
 
+## What changes, and what TermSync works out by itself
+
+| You change in `config.gs` | TermSync works out from the new term number |
+|---|---|
+| `THIS_TERM.number` (+1) | The term's name ("Term 3") and its **new calendar** ("IIM Sirmaur – Term 3") |
+| `THIS_TERM.firstDay`, `lastDay`, exam weeks, term break | Which quiz / exam rows are this term's ("T-III", "Term-III", …) |
+| `COURSES` — the new term's courses | Which timetable rows are your batch's ("Ist year" in Terms 1–3, "2nd Year" in 4–6) |
+| New links in `DATA_SOURCES`, if any | How courses are chosen: by **section** (Terms 1–3) or from the **elective allotment** (4–6) |
+| `SUBJECT_REPS` — the new reps | **Last term's calendar**, so its events can be crossed out |
+
 ## What happens for each student
 
-On their next automatic run (within about 30 minutes of you going live):
+On their next automatic run after you go live (within about 30 minutes):
 
 1. Every TermSync event in last term's calendar is ~~crossed out~~. That calendar is
-   **kept** — nothing is deleted. Students can hide or remove it themselves.
-2. Their new term's courses are filled in for them — from their section (first
-   year) or from the institute's elective allotment (second year).
-3. A **new calendar** for the new term is built.
+   **kept** — nothing is deleted. Students can hide or delete it themselves.
+2. Their new term's courses are filled in for them — from their **section** (Terms
+   1–3) or their **elective allotment** (Terms 4–6).
+3. The new term's calendar is built.
+
+Last term's quizzes and exams never carry over: on the first fetch of the new term
+they're cleared, and the new term's appear as soon as the institute publishes them.
 
 ---
 
 ## Step 1 · Collect the new term's details
 
-- [ ] The new term's **dates** (academic calendar): first class, exam weeks, term break.
-- [ ] The new **course list**. (Not sure of the codes? Step 3 lists every code the
-      timetable uses that isn't in your list yet.)
-- [ ] New **links**, if the institute published new tabs: quiz schedule, mid-term and
-      end-term schedules, elective allotment (second year). Old links to tabs that
-      now hold the new term's rows can stay.
-- [ ] Optional: subject reps, course outline links, evaluation schemes.
+- [ ] **Dates** from the academic calendar: first class, exam weeks, term break, next
+      term's start.
+- [ ] **Courses** — code (exactly as in the timetable's *Code* column), full name,
+      area, credits. Not sure of the codes? ✓ Check settings in Step 3 lists every code
+      the timetable uses for your batch that isn't in your list yet.
+- [ ] **Links** — only if the institute published new tabs for this term: quiz
+      schedule, mid-term and end-term tabs, and (Terms 4–6) the elective allotment
+      sheet. Old links whose tabs now hold the new term's rows can stay.
+- [ ] **Subject / course representatives** — one per course, or one per course **per
+      section** when a course is taught in several sections. Fine to add later.
+- [ ] Optional: course outline links, grading schemes.
+
+Then read the section for your jump: [Term 1 → 2 or 2 → 3](#term-1--2-and-term-2--3),
+[Term 3 → 4](#term-3--4-first-year--second-year), or
+[Term 4 → 5 or 5 → 6](#term-4--5-and-term-5--6).
 
 ---
 
 ## Step 2 · Edit `config.gs`
 
-Open Apps Script (spreadsheet → **Extensions → Apps Script**) → click **`config.gs`**.
+Spreadsheet → **Extensions → Apps Script** → click **`config.gs`**.
 
-**2.1 · Copy this term into `PREVIOUS_TERM` first.** Before changing anything else,
-copy four values from `THIS_TERM` into `PREVIOUS_TERM`:
+1. **`THIS_TERM`**: `number` up by one; new `firstDay`, `lastDay`, `examWindows`,
+   `termBreak`, `nextTermStart`.
+2. **`COURSES`**: replace the list with the new term's courses.
+3. **`DATA_SOURCES`**: any new links.
+4. **`SUBJECT_REPS`**: **empty it**, then add the new reps when you have them (until
+   then the app says "not published yet" — better than showing last term's).
+5. **`COURSE_OUTLINES`**, **`COURSE_EVALUATION`**: new ones, or empty them.
+6. **`SIT_IN_COURSES`**: **empty it**: `{ }`.
+7. **`STUDENTS`**: only if the roster or sections changed.
+8. **Turn on test mode** with your own roll and one friend's from another section:
 
-```js
-var PREVIOUS_TERM = {
-  name:         "Term 2",                  // ← THIS_TERM.name, as it is now
-  calendarName: "IIM Sirmaur – Term 2",    // ← THIS_TERM.calendarName, exactly
-  firstDay:     "2026-09-14",              // ← THIS_TERM.firstDay
-  lastDay:      "2027-01-10"               // ← THIS_TERM.lastDay
-};
-```
+   ```js
+   var TEST_ONLY_FOR = ["MBA26901", "MBA26917"];
+   ```
 
-Copy `calendarName` exactly — the dash in "IIM Sirmaur – Term 2" is a long dash (–),
-and it must match character for character, or last term's events won't be crossed
-out.
+9. **💾 Save**, then **Deploy → Manage deployments → ✏️ → Version: New version →
+   Deploy**.
 
-**2.2 · Update `THIS_TERM`:**
+> **Why test mode?** The moment you press Save, every student's next automatic run
+> uses the new settings. With `TEST_ONLY_FOR` filled in, everyone else's run stops
+> before touching anything — their calendars stay exactly as they were.
 
-- `name`, and a **new** `calendarName` (e.g. `"IIM Sirmaur – Term 3"`)
-- `firstDay`, `lastDay`
-- `termTags`, `ignoreTermTags` — copy from [the table below](#the-tags-for-each-term)
-- `academicCalendarTerm` (e.g. `"Term III"`)
-- `examWindows`, `termBreak`, `nextTermStart`
-- First year → second year? See [below](#first-year--second-year).
-
-**2.3 · Update the per-term lists:**
-
-- `COURSES` — the new term's courses (replace the old list)
-- `DATA_SOURCES` — any new links
-- `SUBJECT_REPS` — **empty it** until the new list is out (otherwise students see last
-  term's reps)
-- `COURSE_OUTLINES`, `COURSE_EVALUATION` — new ones, or empty them
-- `SIT_IN_COURSES` — **empty it**: `{ }`
-- `STUDENTS` — only if the roster or sections changed
-
-**2.4 · Turn on test mode** with your own roll (and, ideally, one friend's from
-another section):
-
-```js
-var TEST_ONLY_FOR = ["MBA26901", "MBA26917"];
-```
-
-**2.5 · Save** (💾), then **Deploy → Manage deployments → ✏️ → Version: New version
-→ Deploy**.
-
-> Why test mode? The moment you press Save, every student's next automatic run uses
-> the new settings. With `TEST_ONLY_FOR` filled in, everyone else's run stops before
-> touching anything — their calendars stay exactly as they were.
+> 💻 **Have Node.js?** Before pasting, run `npm run check -- my-config.gs
+> timetable.csv` (the office's sheet downloaded as CSV). It must end with
+> `RESULT: READY`.
 
 ---
 
 ## Step 3 · Check the settings
 
-In the spreadsheet (reload it first): **📊 Tool Stats → ✓ Check settings**.
+Spreadsheet (reload it) → **📊 Tool Stats → ✓ Check settings**.
 
 - Fix every **✖** line, Save, and run it again.
-- Look at the **KEPT / ignored** lines: this term's quiz and exam rows must say
-  **KEPT**, last term's and the other batch's must say **ignored**.
-- **"Timetable codes … NOT in COURSES"** lists course codes to add to `COURSES`.
+- The line **"From THIS_TERM.number = …"** shows what TermSync worked out: first or
+  second year, the quiz/exam tags, the calendar term.
+- The **KEPT / ignored** lines: your batch's *Year/Batch* rows and this term's quiz and
+  exam rows must say **KEPT**; the other batch's and other terms' must say **ignored**.
+- **"Timetable codes … NOT in COURSES"** lists codes to add to `COURSES`.
+- **"Moving students over from …"** must name last term's calendar.
 
-Then **📊 Tool Stats → Test timetable source**: it should say `Format: MIRROR`, show a
-non-zero number of classes, and say *"All classes fall inside this term's sync
-window."*
+Then **📊 Tool Stats → Test timetable source**: `Format: MIRROR`, a non-zero number of
+classes, and *"All classes fall inside this term's sync window."*
 
 ---
 
 ## Step 4 · Start the handover
 
-**📊 Tool Stats → ▶ Start Term 3 handover** → **Yes**.
-
-This loads the new timetable straight away and makes sure the 30-minute refresh is
-running. While test mode is on, only the rolls in `TEST_ONLY_FOR` move.
+**📊 Tool Stats → ▶ Start Term N handover** → **Yes**. The dialog says how courses
+will be filled in. It loads the new timetable straight away and makes sure the
+30-minute refresh is running. While test mode is on, only `TEST_ONLY_FOR` moves.
 
 ---
 
 ## Step 5 · Check it on yourself
 
 1. Open your TermSync link → press **Sync now** (or wait up to 30 minutes).
-2. In Google Calendar: last term's calendar is crossed out; the new term's calendar is
-   there with your new courses, quizzes and exams.
-3. Ask your friend in `TEST_ONLY_FOR` to check theirs.
+2. Google Calendar: last term's calendar is crossed out; the new term's calendar has
+   your new courses (and quizzes / exams once they're published).
+3. Your friend in `TEST_ONLY_FOR` checks theirs.
 4. **📊 Tool Stats → ✓ Enrolment pre-flight (every student)** must end with
-   **"Clear for go-live"**. It checks the whole roster without touching anyone's
-   calendar.
+   **"Clear for go-live"**. It checks the whole batch without touching any calendar.
 
-Something wrong? Fix `config.gs`, Save, Deploy a new version, and check again. Nobody
+Something wrong? Fix `config.gs`, Save, Deploy a new version, check again. Nobody
 outside `TEST_ONLY_FOR` has been touched.
 
 ---
@@ -141,83 +139,93 @@ outside `TEST_ONLY_FOR` has been touched.
 var TEST_ONLY_FOR = [];
 ```
 
-**Save**, then **Deploy → Manage deployments → ✏️ → New version → Deploy**.
-
-That's it. Over the next ~30 minutes everyone who uses TermSync is moved across on
-their own. A student who never used it isn't signed up by this — they still choose
-to.
+**Save**, then **Deploy → Manage deployments → ✏️ → New version → Deploy**. Over the
+next ~30 minutes everyone who uses TermSync moves across on their own. (Students who
+never switched it on aren't signed up by this.)
 
 Optional message to the batch:
 
 ```text
 📅 TermSync has moved to Term 3. Your new calendar "IIM Sirmaur – Term 3" fills in
 by itself within the hour — nothing to do. Last term's calendar is kept, crossed
-out; hide or delete it whenever you like.
+out; hide or delete it whenever you like. Unofficial tool — the official timetable
+always comes first.
 ```
 
 ---
 
-## First year → second year
+## Term 1 → 2 and Term 2 → 3
 
-Moving from Term 3 to Term 4 is the same as any other term, plus three changes in
-`THIS_TERM`, because second-year courses are electives:
+Still first year: **courses come from each student's section.**
 
-```js
-courseSelection: "electives",
-yearTags:       ["2NDYEAR", "IIYEAR", "2NDYR"],
-ignoreYearTags: [],
-```
+- **`COURSES`** = every core course of the new term. A student gets every course the
+  timetable runs for **their section**, plus any course run for the whole batch at
+  once (a row with no section).
+- **Programme-only courses:** a course only MBA-TM students take gets
+  `onlyFor: ["MBATM"]` (only rolls starting MBATM get it). Don't add `required: true`.
+- **Sections reshuffled?** If the institute changed anyone's section, update
+  `STUDENTS` — the section there is what decides their courses.
+- **Subject reps:** first-year courses usually have one rep per section, so add one
+  line per course per section: `ECO, A, NAME, ROLL` — `ECO, B, …`, and so on.
 
-and in `DATA_SOURCES`:
+## Term 3 → 4 (first year → second year)
 
-- `electivesSummary` — the published link to the **"Summary"** tab of the
-  institute's elective allotment sheet (one tab per course, listing who's enrolled).
-  Without it, students tick their electives by hand (that works too).
+The big one: **courses become electives.** Setting `number: 4` switches TermSync to
+second-year timetable rows ("2nd Year") and to electives by itself. You add:
 
-Then run **✓ Check settings** and **✓ Enrolment pre-flight** as usual. The pre-flight
-lists anyone the allotment sheet doesn't mention.
+- **`DATA_SOURCES.electivesSummary`** — the "Publish to web" link to the **Summary**
+  tab of the institute's elective allotment sheet (a sheet with a *Summary* tab
+  listing the courses, and one tab per course listing its students). With it, each
+  student's electives — and their section in a split elective — are filled in for
+  them. **Without it, students tick their own electives** — that works too.
+- **`COURSES`** = every elective offered this term (codes as in the timetable).
+- **Subject reps**: one per elective, or per section for an elective taught in
+  several sections.
+- **Roster:** same students; sections matter less now (they only matter for split
+  electives, and the allotment sheet says which section). Keep `STUDENTS` up to date
+  for names and the admin views.
+
+Then the same Steps 2 – 6. In Step 5, the pre-flight reads every course tab of the
+allotment sheet and lists anyone the sheet doesn't mention — they'll pick by hand.
 
 > The elective sheet's layout has changed between years before. If the pre-flight
-> says it can't read the course tabs, the sheet's shape has probably changed —
-> see [CHANGING_THE_CODE.md](CHANGING_THE_CODE.md). Students can still pick by hand
-> in the meantime (`courseSelection: "pick"`).
+> says it can't read the course tabs, the sheet's shape has probably changed — see
+> [CHANGING_THE_CODE.md](CHANGING_THE_CODE.md#if-the-institute-changes-a-sheets-layout).
+> Meanwhile students can pick by hand: add `courseSelection: "pick"` (see the
+> advanced lines in `THIS_TERM`).
+
+## Term 4 → 5 and Term 5 → 6
+
+Still second year, still electives. Usually a **new elective allotment sheet** is
+published each term — put its Summary tab's link in `electivesSummary`. New
+`COURSES`, new subject reps, same Steps 2 – 6.
 
 ---
 
-## The tags for each term
+## Reference: the standard tags
 
-The quiz and exam sheets say which term a row belongs to in a **"Batch / Term"**
-column, written in different ways ("MBA 2026-28, PhD26 T-II", "MBA & MBA-TM 2025-27
-Term-V", "MBA, 2025-27 T-4"). TermSync keeps a row if it contains one of `termTags`
-and none of `ignoreTermTags` (spaces and capital letters don't matter).
+TermSync uses these automatically from `THIS_TERM.number`. You only need this table
+if ✓ Check settings shows the institute writing a term in a way they don't catch —
+then use the advanced lines in `THIS_TERM` to override.
 
-Short tags can hide inside longer ones — "T-I" is inside "T-II", "T-III" and "T-IV" —
-which is what `ignoreTermTags` is for. These are a safe starting point:
-
-| Term | `termTags` | `ignoreTermTags` |
+| Term | Quiz/exam rows kept when they contain | …and none of |
 |---|---|---|
-| Term 1 | `["TERM-I", "TERMI", "T-I", "T-1"]` | `["TERM-II", "TERMII", "T-II", "TERM-III", "TERMIII", "T-III", "TERM-IV", "TERMIV", "T-IV"]` |
-| Term 2 | `["TERM-II", "TERMII", "T-II", "T-2"]` | `["TERM-III", "TERMIII", "T-III"]` |
-| Term 3 | `["TERM-III", "TERMIII", "T-III", "T-3"]` | `[]` |
-| Term 4 | `["TERM-IV", "TERMIV", "T-IV", "T-4"]` | `[]` |
-| Term 5 | `["TERM-V", "TERMV", "T-V", "T-5", "T5"]` | `["TERM-VI", "TERMVI", "T-VI", "T-6", "T6"]` |
-| Term 6 | `["TERM-VI", "TERMVI", "T-VI", "T-6", "T6"]` | `[]` |
+| 1 | `TERM-I`, `TERMI`, `T-I`, `T-1` | `TERM-II`, `TERMII`, `T-II`, `TERM-III`, `TERMIII`, `T-III`, `TERM-IV`, `TERMIV`, `T-IV` |
+| 2 | `TERM-II`, `TERMII`, `T-II`, `T-2` | `TERM-III`, `TERMIII`, `T-III` |
+| 3 | `TERM-III`, `TERMIII`, `T-III`, `T-3` | — |
+| 4 | `TERM-IV`, `TERMIV`, `T-IV`, `T-4` | — |
+| 5 | `TERM-V`, `TERMV`, `T-V`, `T-5`, `T5` | `TERM-VI`, `TERMVI`, `T-VI`, `T-6`, `T6` |
+| 6 | `TERM-VI`, `TERMVI`, `T-VI`, `T-6`, `T6` | — |
 
-And for the timetable's **"Year/Batch"** column:
+Timetable rows: Terms 1–3 keep `1STYEAR` / `ISTYEAR` and ignore `2NDYEAR` / `IIYEAR`;
+Terms 4–6 keep `2NDYEAR` / `IIYEAR` / `2NDYR`. (Spaces and capitals never matter.)
 
-| Year | `yearTags` | `ignoreYearTags` |
-|---|---|---|
-| First year | `["1STYEAR", "ISTYEAR"]` | `["2NDYEAR", "IIYEAR"]` |
-| Second year | `["2NDYEAR", "IIYEAR", "2NDYR"]` | `[]` |
+## Notes
 
-**Always confirm with ✓ Check settings** — it lists every value it found in those
-columns and whether it was KEPT or ignored. If the institute writes something new,
-add a word from it.
-
----
-
-## If you ran "End term" last term
-
-Nothing special: **▶ Start handover** lifts the end-of-term lock by itself. Students
-whose automatic sync was switched off by End term resume when they next open
-TermSync.
+- **Ran "End term" last term?** Nothing special: ▶ Start handover lifts the
+  end-of-term lock. Students whose automatic sync was switched off by End term resume
+  when they next open TermSync.
+- **Gave a calendar a name of your own** (`THIS_TERM.calendarName`)? Then TermSync
+  can't guess last term's: fill in `PREVIOUS_TERM` with last term's name, calendar
+  name and dates, exactly.
+- **Never change `THIS_TERM.number` mid-term** — it moves everyone to a new calendar.

@@ -38,6 +38,10 @@ programmer. Everything below is for changing the code.
   it still loads, and report bad values with `settingsProblem_` and in
   `settingsReport_` — **never throw** at load time over a value (a load-time throw
   fails every student's background sync).
+- **Terms are driven by `THIS_TERM.number`** (presets in `TERM_PRESETS_` /
+  `YEAR_PRESETS_`, read through `termValue_`); keep explicit `THIS_TERM` fields working
+  as overrides. **Optional features** go through `FEATURES_` and must be enforced on
+  the server, not just hidden in `Index.html`.
 - **Never put real people's data** (names, roll numbers, emails, sheet or Drive ids)
   in this repository — not in `config.gs`, tests, fixtures or comments.
 - **Keep the credits**: "Created by Aniketh Hotagi" in the file headers,

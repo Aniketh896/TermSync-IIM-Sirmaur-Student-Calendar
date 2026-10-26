@@ -32,7 +32,8 @@ var CFG_ = {
   outlines:      (typeof COURSE_OUTLINES !== "undefined" && COURSE_OUTLINES) || {},
   evaluation:    (typeof COURSE_EVALUATION !== "undefined" && COURSE_EVALUATION) || {},
   testOnlyFor:   (typeof TEST_ONLY_FOR !== "undefined" && Array.isArray(TEST_ONLY_FOR)) ? TEST_ONLY_FOR : [],
-  sitIn:         (typeof SIT_IN_COURSES !== "undefined" && SIT_IN_COURSES) || {}
+  sitIn:         (typeof SIT_IN_COURSES !== "undefined" && SIT_IN_COURSES) || {},
+  features:      (typeof FEATURES !== "undefined" && FEATURES) || {}
 };
 
 // Every value read from config.gs that had to be corrected or ignored. Loading
@@ -96,8 +97,68 @@ function settingWindow_(term) {
   return { start: start, end: end };
 }
 
+// ── The standard values for each term (config.gs → THIS_TERM.number) ─────────
+// Most of what changes from one term to the next follows from the term's number:
+// its name, its calendar's name, how the quiz / exam sheets write it, which year's
+// timetable rows are this batch's, and how courses are chosen. So config.gs only
+// needs the number; any of these can still be set explicitly in THIS_TERM, and an
+// explicit value always wins (a config.gs written before `number` existed, which
+// spells everything out, behaves exactly as before).
+//
+// Tag matching is by substring, so each term's ignore list names the neighbours
+// that contain its tags ("T-I" is inside "T-II", "T-III" and "T-IV"). The quiz and
+// exam sheets have written terms as "T-II", "Term-V", "T-4", "T5"; ✓ Check
+// settings shows every value found and which were kept.
+var TERM_ROMAN_ = ["", "I", "II", "III", "IV", "V", "VI"];
+var TERM_PRESETS_ = {
+  1: { termTags: ["TERM-I", "TERMI", "T-I", "T-1"],
+       ignoreTermTags: ["TERM-II", "TERMII", "T-II", "TERM-III", "TERMIII", "T-III", "TERM-IV", "TERMIV", "T-IV"] },
+  2: { termTags: ["TERM-II", "TERMII", "T-II", "T-2"], ignoreTermTags: ["TERM-III", "TERMIII", "T-III"] },
+  3: { termTags: ["TERM-III", "TERMIII", "T-III", "T-3"], ignoreTermTags: [] },
+  4: { termTags: ["TERM-IV", "TERMIV", "T-IV", "T-4"], ignoreTermTags: [] },
+  5: { termTags: ["TERM-V", "TERMV", "T-V", "T-5", "T5"], ignoreTermTags: ["TERM-VI", "TERMVI", "T-VI", "T-6", "T6"] },
+  6: { termTags: ["TERM-VI", "TERMVI", "T-VI", "T-6", "T6"], ignoreTermTags: [] }
+};
+// Terms 1–3 are the first year: everyone takes the core courses in their own
+// section. Terms 4–6 are the second year: electives.
+var YEAR_PRESETS_ = {
+  first:  { yearTags: ["1STYEAR", "ISTYEAR"], ignoreYearTags: ["2NDYEAR", "IIYEAR"], courseSelection: "section" },
+  second: { yearTags: ["2NDYEAR", "IIYEAR", "2NDYR"], ignoreYearTags: [], courseSelection: "electives" }
+};
+var TERM_NUMBER_ = (function () {
+  var raw = settingText_(THIS_TERM.number);
+  if (!raw) return 0;
+  var n = parseInt(raw.replace(/^term\s*/i, ""), 10);
+  if (n >= 1 && n <= 6) return n;
+  settingsProblem_('THIS_TERM.number must be 1, 2, 3, 4, 5 or 6 (it is "' + raw + '").');
+  return 0;
+})();
+var TERM_PRESET_ = TERM_NUMBER_ ? {
+  number: TERM_NUMBER_,
+  name: "Term " + TERM_NUMBER_,
+  academicTerm: "Term " + TERM_ROMAN_[TERM_NUMBER_],
+  termTags: TERM_PRESETS_[TERM_NUMBER_].termTags,
+  ignoreTermTags: TERM_PRESETS_[TERM_NUMBER_].ignoreTermTags,
+  year: TERM_NUMBER_ <= 3 ? YEAR_PRESETS_.first : YEAR_PRESETS_.second
+} : null;
+
+// THIS_TERM[field] when config.gs sets it (a list counts even when empty), else the
+// term's standard value.
+function termValue_(field, standard) {
+  var v = THIS_TERM[field];
+  if (Array.isArray(v)) return v;
+  if (v !== undefined && v !== null && settingText_(v) !== "") return v;
+  return standard;
+}
+
+// "IIM Sirmaur – Term 3": the calendar name a term gets when config.gs doesn't
+// name it (long dash U+2013, as every TermSync calendar has always had).
+function standardCalendarName_(n) {
+  return (settingText_(CFG_.institute.name) || "TermSync") + " \u2013 Term " + n;
+}
+
 var TERM_CONFIG_ = (function () {
-  var label = settingText_(THIS_TERM.name) || "This term";
+  var label = settingText_(termValue_("name", TERM_PRESET_ && TERM_PRESET_.name)) || "This term";
   var win = settingWindow_(THIS_TERM);
   if (!win) {
     // A broken window must not stop the app; fall back to a generous one around
@@ -109,10 +170,11 @@ var TERM_CONFIG_ = (function () {
     win = { start: new Date(now.getFullYear(), now.getMonth() - 3, 1),
             end: new Date(now.getFullYear(), now.getMonth() + 6, 1) };
   }
-  var calendarName = settingText_(THIS_TERM.calendarName);
+  var calendarName = settingText_(THIS_TERM.calendarName) ||
+    (TERM_NUMBER_ ? standardCalendarName_(TERM_NUMBER_) : "");
   if (!calendarName) {
-    calendarName = settingText_(CFG_.institute.name) + " – " + label;
-    settingsProblem_('THIS_TERM.calendarName is empty. Using "' + calendarName + '".');
+    calendarName = settingText_(CFG_.institute.name) + " \u2013 " + label;
+    settingsProblem_('THIS_TERM needs a number (1–6). Using the calendar name "' + calendarName + '" until it has one.');
   }
   return {
     label: label,
@@ -125,15 +187,15 @@ var TERM_CONFIG_ = (function () {
     syncWindowEnd: win.end,
     // Markers in the quiz and exam sheets' "Batch / Term" column that flag a row as
     // this term's (compared uppercase with all whitespace stripped).
-    quizTermTags: settingTags_(THIS_TERM.termTags),
+    quizTermTags: settingTags_(termValue_("termTags", TERM_PRESET_ ? TERM_PRESET_.termTags : [])),
     // Checked BEFORE quizTermTags, because tag matching is substring-based and
     // "TERM-V" is a substring of "TERM-VI" (likewise "T-I" of "T-II").
-    excludeTermTags: settingTags_(THIS_TERM.ignoreTermTags),
+    excludeTermTags: settingTags_(termValue_("ignoreTermTags", TERM_PRESET_ ? TERM_PRESET_.ignoreTermTags : [])),
     // How this term is named in the published Academic Calendar sheet (Roman
     // numerals there — "Term IV", "Term V"). getAcademic_ pulls the live exam/break
     // dates by matching this string, and treats the *next* distinct term in the
     // sheet as the term break's target.
-    academicTerm: settingText_(THIS_TERM.academicCalendarTerm),
+    academicTerm: settingText_(termValue_("academicCalendarTerm", TERM_PRESET_ && TERM_PRESET_.academicTerm)),
     // Key dates from the official academic calendar. A FALLBACK only: getAcademic_
     // overrides each field from the live calendar sheet (see ACADEMIC_CAL_CSV_URL)
     // and drops back here per-field on any miss. The PDF's insights use these so an
@@ -149,7 +211,8 @@ var TERM_CONFIG_ = (function () {
 var CALENDAR_NAME = TERM_CONFIG_.calendarName;
 
 // How each student's courses are found — see enrolmentMode_.
-var COURSE_SELECTION_ = settingText_(THIS_TERM.courseSelection).toLowerCase();
+var COURSE_SELECTION_ = settingText_(termValue_("courseSelection",
+  TERM_PRESET_ ? TERM_PRESET_.year.courseSelection : "pick")).toLowerCase();
 
 // ── Term-to-term handover ─────────────────────────────────────────────────────
 // A new term is pasted OVER the existing Apps Script project rather than deployed
@@ -169,11 +232,21 @@ var COURSE_SELECTION_ = settingText_(THIS_TERM.courseSelection).toLowerCase();
 //
 // The previous term's calendar, addressed BY NAME because that is the only handle
 // a student's own run has on it. findOwnedCalendar_ (never getOrCreate) is used,
-// so a student who deleted it is not handed an empty one back. Blank on a first
-// install: there is no previous calendar, and the handover only latches.
+// so a student who deleted it is not handed an empty one back.
+//
+// When config.gs leaves PREVIOUS_TERM blank and this term's calendar has its
+// standard name, last term's is worked out the same way ("… – Term 2" before
+// "… – Term 3"), so moving on a term needs only a new number. On a first install
+// that names a calendar nobody has, which is harmless: the cross-out only runs
+// for students who were already syncing, and only touches TermSync's own events.
 var PREVIOUS_TERM_ = (function () {
   var prev = CFG_.previousTerm;
   var name = settingText_(prev.calendarName);
+  var auto = false;
+  if (!name && TERM_NUMBER_ > 1 && !settingText_(THIS_TERM.calendarName)) {
+    name = standardCalendarName_(TERM_NUMBER_ - 1);
+    auto = true;
+  }
   var win = settingWindow_(prev);
   if (name && name === TERM_CONFIG_.calendarName) {
     settingsProblem_('PREVIOUS_TERM.calendarName is the same as THIS_TERM.calendarName. They must differ, ' +
@@ -184,18 +257,39 @@ var PREVIOUS_TERM_ = (function () {
     // The cross-out searches this window for last term's events. Exact dates are
     // only an economy — the pass touches nothing but this tool's own events — so
     // a wide window is a safe stand-in when they are missing.
-    settingsProblem_('PREVIOUS_TERM.firstDay / lastDay are missing or not "YYYY-MM-DD". Searching the ' +
-      'year before this term instead.');
+    if (!auto && (settingText_(prev.firstDay) || settingText_(prev.lastDay))) {
+      settingsProblem_('PREVIOUS_TERM.firstDay / lastDay are not "YYYY-MM-DD". Searching the year before ' +
+        'this term instead.');
+    }
     win = { start: new Date(TERM_CONFIG_.syncWindowStart.getFullYear() - 1,
                             TERM_CONFIG_.syncWindowStart.getMonth(), 1),
             end: TERM_CONFIG_.syncWindowEnd };
   }
   return {
-    label: settingText_(prev.name) || "the previous term",
+    label: settingText_(prev.name) || (auto ? "Term " + (TERM_NUMBER_ - 1) : "the previous term"),
     calendarName: name,
+    auto: auto,
     syncWindowStart: win ? win.start : TERM_CONFIG_.syncWindowStart,
     syncWindowEnd: win ? win.end : TERM_CONFIG_.syncWindowStart
   };
+})();
+
+// ── Optional features (config.gs → FEATURES) ──────────────────────────────────
+// Everything is on unless config.gs switches it off with `false`. Each switch is
+// enforced on the server (the endpoint refuses) as well as hidden on the page, so
+// turning one off really turns it off rather than just hiding a button.
+var FEATURES_ = (function () {
+  var out = { adminDashboard: true, usageStats: true, usageLog: true, subjectReps: true,
+              courseOutlines: true, pdfDownload: true, reportWrongEntry: true };
+  Object.keys(CFG_.features).forEach(function (k) {
+    if (!out.hasOwnProperty(k)) {
+      settingsProblem_('FEATURES.' + k + ' is not a feature TermSync knows. Check the spelling.');
+      return;
+    }
+    if (CFG_.features[k] === false) out[k] = false;
+    else if (CFG_.features[k] !== true) settingsProblem_('FEATURES.' + k + ' must be true or false.');
+  });
+  return out;
 })();
 
 // The handover is latched per user in tt_handover. Keyed on the term itself, so a
@@ -954,7 +1048,8 @@ var SAC_ROLES_ = (function () {
     }
     out[roll] = SAC_ROLE_PRESETS_[role];
   }
-  if (CREATOR_ROLL_) out[CREATOR_ROLL_] = SAC_ROLE_PRESETS_.maintainer;
+  // A roll still reading "MBA26XXX" is the template's placeholder, not a person.
+  if (CREATOR_ROLL_ && !/X{2,}/.test(CREATOR_ROLL_)) out[CREATOR_ROLL_] = SAC_ROLE_PRESETS_.maintainer;
   return out;
 })();
 
@@ -998,6 +1093,7 @@ function spreadsheetOwnerEmail_() {
 // The web app runs as USER_ACCESSING, so `email` is the caller's authenticated
 // address and cannot be spoofed.
 function canViewLogs_(email) {
+  if (!FEATURES_.adminDashboard) return false;   // config.gs → FEATURES.adminDashboard
   email = String(email || "").toLowerCase();
   if (!email) return false;
   var roll = email.split("@")[0].toUpperCase();
@@ -1547,7 +1643,7 @@ function safeLink_(url) {
 // (health.site) on every full load, so Index.html holds no copy of its own.
 function siteSettings_() {
   var outlines = {};
-  var files = (CFG_.outlines && CFG_.outlines.files) || {};
+  var files = FEATURES_.courseOutlines ? ((CFG_.outlines && CFG_.outlines.files) || {}) : {};
   Object.keys(files).forEach(function (code) {
     var list = Array.isArray(files[code]) ? files[code] : [files[code]];
     var clean = [];
@@ -1570,7 +1666,9 @@ function siteSettings_() {
     maintainer: { name: settingText_(CFG_.maintainer.name), url: safeLink_(CFG_.maintainer.linkedin) },
     creator: CREATOR_CREDIT_,
     courseNames: courseNames,
-    outlineFolderUrl: safeLink_(CFG_.outlines && CFG_.outlines.folder),
+    outlineFolderUrl: FEATURES_.courseOutlines ? safeLink_(CFG_.outlines && CFG_.outlines.folder) : "",
+    // config.gs → FEATURES, so the page hides what is switched off.
+    features: FEATURES_,
     outlines: outlines,
     // "section" | "electives" | "pick" — the client hides the auto-fill button in
     // "pick" mode and words the "your courses" card for the mode in use.
@@ -2587,12 +2685,18 @@ function settingsReport_(opts) {
   SETTINGS_PROBLEMS_.forEach(function (p) { bad.push(p); });
 
   // 1 · This term
-  if (!settingText_(THIS_TERM.name)) bad.push('THIS_TERM.name is empty.');
+  if (!TERM_NUMBER_ && !settingText_(THIS_TERM.name)) bad.push('THIS_TERM.number is missing — set it to the term (1–6).');
   if (!settingText_(THIS_TERM.batch)) warn.push('THIS_TERM.batch is empty — the page header will show only the term.');
   var days = Math.round((TERM_CONFIG_.syncWindowEnd - TERM_CONFIG_.syncWindowStart) / 86400000);
   ok.push('Term: ' + TERM_CONFIG_.label + (TERM_CONFIG_.batch ? ' · ' + TERM_CONFIG_.batch : '') +
     ' — calendar "' + TERM_CONFIG_.calendarName + '", events kept from ' +
     TERM_CONFIG_.syncWindowStart.toDateString() + ' for ' + days + ' days.');
+  if (TERM_PRESET_) {
+    ok.push('From THIS_TERM.number = ' + TERM_NUMBER_ + ': ' + (TERM_NUMBER_ <= 3 ? 'first' : 'second') +
+      ' year; quiz/exam rows tagged ' + TERM_CONFIG_.quizTermTags.join(' / ') +
+      (TERM_CONFIG_.excludeTermTags.length ? ' (but not ' + TERM_CONFIG_.excludeTermTags.join(' / ') + ')' : '') +
+      '; timetable rows tagged ' + GUEST_YEAR_TAGS_.join(' / ') + '; academic calendar term "' + TERM_CONFIG_.academicTerm + '".');
+  }
   if (days > 200) warn.push('THIS_TERM.firstDay → lastDay spans ' + days + ' days. A term is usually 80–140; check the years.');
   if (["section", "electives", "pick"].indexOf(COURSE_SELECTION_) === -1) {
     bad.push('THIS_TERM.courseSelection must be "section", "electives" or "pick" (it is "' + COURSE_SELECTION_ + '"). Using "pick".');
@@ -2616,9 +2720,14 @@ function settingsReport_(opts) {
 
   // 2 · Last term
   if (PREVIOUS_TERM_.calendarName) {
-    ok.push('Moving students over from "' + PREVIOUS_TERM_.calendarName + '" (' + PREVIOUS_TERM_.label + ').');
+    ok.push('Moving students over from "' + PREVIOUS_TERM_.calendarName + '" (' + PREVIOUS_TERM_.label + ')' +
+      (PREVIOUS_TERM_.auto ? ' — worked out from the term number. On a first install nobody has that calendar, ' +
+        'which is fine.' : '.'));
+  } else if (TERM_NUMBER_ > 1) {
+    warn.push('THIS_TERM has its own calendarName and PREVIOUS_TERM is blank, so last term\'s calendar won\'t ' +
+      'be crossed out when students move to this term. Fine on a first install; otherwise fill in PREVIOUS_TERM.');
   } else {
-    ok.push('No previous term set — right for a first install.');
+    ok.push('No previous term — right for Term 1.');
   }
 
   // 3 / 4 · Institute and maintainer
@@ -3196,6 +3305,7 @@ function isEnableAction_(action) {
 // owner-run admin fetch flushes the buffer into the sheet (flushUsageBuffer_).
 // Never throws — logging must never break the action it accompanies.
 function logUsage_(action) {
+  if (!FEATURES_.usageLog) return;   // config.gs → FEATURES.usageLog: record nothing
   try {
     var email = Session.getActiveUser().getEmail();
     var student = lookupStudentByEmail_(email);
@@ -3294,6 +3404,9 @@ function flushUsageBuffer_() {
 // the signal, not reject borderline input — but a course or a description is
 // required so empty submissions don't accrue.
 function submitReport(report) {
+  if (!FEATURES_.reportWrongEntry) {
+    return { ok: false, reason: "off", message: "Reports are switched off for this batch — please tell the SAC directly." };
+  }
   try {
     report = report || {};
     var course = (report.course == null ? "" : String(report.course)).trim().slice(0, 80);
@@ -3590,6 +3703,7 @@ function showUsageStats() {
 // ---------------------------------------------------------
 
 function getUsageStats() {
+  if (!FEATURES_.usageStats) return { off: true, totalUsers: 0, activeUsers: 0, totalEnables: 0 };
   // Cached briefly: the stats modal is open to every student, and the numbers
   // don't need to be fresher than a minute.
   var cache = CacheService.getScriptCache();
@@ -5922,6 +6036,7 @@ function bootstrap() {
 // per-user map the sync writes (resolveCourseColors_, read here without writing), so
 // the PDF colours always match what the user sees in Google Calendar.
 function getPrintableTimetable() {
+  if (!FEATURES_.pdfDownload) return { ok: false, reason: "off" };
   var props = PropertiesService.getUserProperties();
   var saved = props.getProperty('tt_selections');
   var selections = [];
@@ -6909,6 +7024,7 @@ function configuredSubjectReps_() {
 // `force` (admin-fetch pre-warm only) skips the cache read so the 6h TTL restarts
 // every hour and never expires on a student's health call.
 function getSubjectReps_(force) {
+  if (!FEATURES_.subjectReps) return null;
   // No published SR sheet: the list typed into config.gs is the roster, and no
   // health call pays a spurious UrlFetch.
   if (SUBJECT_REPS_CSV_URL === PENDING_URL_) {
@@ -9413,12 +9529,14 @@ function fetchAndCleanAdminDataLocked_() {
     try {
       var quizRaw = adminStep_("fetch quiz CSV", function () { return csvTextFrom_(csvResponses, "quiz"); });
       quizRows = parseQuizCsv_(quizRaw, parseIssues);
-      assertNotEmptyWipe_(QUIZ_SHEET_NAME, quizRows, parseIssues, "Quiz CSV");
+      assertNotEmptyWipe_(QUIZ_SHEET_NAME, quizRows, parseIssues, "Quiz CSV", termSwitchPending);
       quizSignature = dataSignature_(quizRows);
     } catch (quizErr) {
       console.error("Quiz fetch/parse failed; preserving previous quiz data: " + getErrorMessage_(quizErr));
-      quizRows = null;
-      quizSignature = storedSignature_(scriptProps, 'quiz_data_signature');
+      // On the first fetch of a new term whatever is stored is LAST term's — clear
+      // it rather than keep it (see assertNotEmptyWipe_).
+      quizRows = termSwitchPending ? [] : null;
+      quizSignature = termSwitchPending ? dataSignature_([]) : storedSignature_(scriptProps, 'quiz_data_signature');
     }
 
     // Fetch this term's MID-TERM exam schedule — same isolation as quizzes: an
@@ -9433,12 +9551,14 @@ function fetchAndCleanAdminDataLocked_() {
     try {
       var examRaw = adminStep_("fetch exam CSV", function () { return csvTextFrom_(csvResponses, "exam"); });
       examRows = parseExamCsv_(examRaw, parseIssues, "Mid-term exam");
-      assertNotEmptyWipe_(EXAM_SHEET_NAME, examRows, parseIssues, "Mid-term exam CSV");
+      assertNotEmptyWipe_(EXAM_SHEET_NAME, examRows, parseIssues, "Mid-term exam CSV", termSwitchPending);
       examSignature = dataSignature_(examRows);
     } catch (examErr) {
       console.error("Exam fetch/parse failed; preserving previous exam data: " + getErrorMessage_(examErr));
-      examRows = null;
-      examSignature = storedSignature_(scriptProps, 'exam_data_signature');
+      // On the first fetch of a new term whatever is stored is LAST term's — clear
+      // it rather than keep it (see assertNotEmptyWipe_).
+      examRows = termSwitchPending ? [] : null;
+      examSignature = termSwitchPending ? dataSignature_([]) : storedSignature_(scriptProps, 'exam_data_signature');
     }
 
     // Fetch the Term-5 END-TERM exam schedule from its own published tab — same
@@ -9450,12 +9570,14 @@ function fetchAndCleanAdminDataLocked_() {
     try {
       var endTermRaw = adminStep_("fetch end-term CSV", function () { return csvTextFrom_(csvResponses, "endterm"); });
       endTermRows = parseExamCsv_(endTermRaw, parseIssues, "End-term exam");
-      assertNotEmptyWipe_(ENDTERM_SHEET_NAME, endTermRows, parseIssues, "End-term exam CSV");
+      assertNotEmptyWipe_(ENDTERM_SHEET_NAME, endTermRows, parseIssues, "End-term exam CSV", termSwitchPending);
       endTermSignature = dataSignature_(endTermRows);
     } catch (endTermErr) {
       console.error("End-term fetch/parse failed; preserving previous end-term data: " + getErrorMessage_(endTermErr));
-      endTermRows = null;
-      endTermSignature = storedSignature_(scriptProps, 'endterm_data_signature');
+      // On the first fetch of a new term whatever is stored is LAST term's — clear
+      // it rather than keep it (see assertNotEmptyWipe_).
+      endTermRows = termSwitchPending ? [] : null;
+      endTermSignature = termSwitchPending ? dataSignature_([]) : storedSignature_(scriptProps, 'endterm_data_signature');
     }
 
     // Guest lectures — same per-source isolation as every block above, plus a
@@ -9781,16 +9903,20 @@ function fetchAndCleanAdminDataLocked_() {
         }]);
       }
       var allChanges = [];
+      // Quizzes and exams are diffed even against an empty sheet: a term's first
+      // published schedule is news ("new quiz"), and since a term switch now clears
+      // last term's rows (assertNotEmptyWipe_), empty is how every term's schedule
+      // starts. The very first fetch of a term is a term switch and logs nothing.
       if (!isTermSwitch && classChanged && oldClassRows.length) {
         allChanges = allChanges.concat(diffSheetData_(oldClassRows, cleanData, "Class"));
       }
-      if (!isTermSwitch && quizChanged && quizRows !== null && oldQuizRows.length) {
+      if (!isTermSwitch && quizChanged && quizRows !== null) {
         allChanges = allChanges.concat(diffSheetData_(currentTermRows_(oldQuizRows), quizRows, "Quiz"));
       }
-      if (!isTermSwitch && examChanged && examRows !== null && oldExamRows.length) {
+      if (!isTermSwitch && examChanged && examRows !== null) {
         allChanges = allChanges.concat(diffSheetData_(currentTermRows_(oldExamRows), examRows, "Mid-Term"));
       }
-      if (!isTermSwitch && endTermChanged && endTermRows !== null && oldEndTermRows.length) {
+      if (!isTermSwitch && endTermChanged && endTermRows !== null) {
         allChanges = allChanges.concat(diffSheetData_(currentTermRows_(oldEndTermRows), endTermRows, "End-Term"));
       }
       if (!isTermSwitch && marksChanged && marksRows !== null && oldMarksRows.length) {
@@ -10590,8 +10716,8 @@ var GUEST_SHEET_HEADER_ = ["Date", "Start Time", "End Time", "Course Code", "Sec
 // Matching is by substring, so a short tag can sit inside the other year's label
 // ("IYEAR" is inside "IIYEAR"). The ignore list is checked first, exactly as
 // excludeTermTags is in isTermRow_.
-var GUEST_YEAR_TAGS_ = settingTags_(THIS_TERM.yearTags);
-var GUEST_YEAR_IGNORE_TAGS_ = settingTags_(THIS_TERM.ignoreYearTags);
+var GUEST_YEAR_TAGS_ = settingTags_(termValue_("yearTags", TERM_PRESET_ ? TERM_PRESET_.year.yearTags : []));
+var GUEST_YEAR_IGNORE_TAGS_ = settingTags_(termValue_("ignoreYearTags", TERM_PRESET_ ? TERM_PRESET_.year.ignoreYearTags : []));
 
 function isOurYearRow_(cell) {
   if (!cell) return false;
@@ -11512,8 +11638,17 @@ function storedSignature_(scriptProps, key) {
 //
 // An empty parse into an empty or not-yet-created sheet is normal early in a term —
 // there is nothing to lose, so it is allowed through.
-function assertNotEmptyWipe_(sheetName, rows, issues, label) {
+//
+// `newTerm` (the first fetch after THIS_TERM changes): the rows still in the sheet
+// are LAST term's, so an empty parse is the truth — this term has none published
+// yet — and the old rows must go. Kept, they would reach the new calendars for any
+// course whose code carries over from one term to the next.
+function assertNotEmptyWipe_(sheetName, rows, issues, label, newTerm) {
   if (!rows || rows.length > 0) return;
+  if (newTerm) {
+    issues.push(label + ": none for " + TERM_CONFIG_.label + " yet — last term's rows cleared.");
+    return;
+  }
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
   if (!sheet || sheet.getLastRow() <= 1) return;
   var msg = label + " parsed to 0 rows while " + sheetName + " still holds " +

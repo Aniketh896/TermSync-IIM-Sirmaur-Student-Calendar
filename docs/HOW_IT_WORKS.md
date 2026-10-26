@@ -47,7 +47,7 @@ pause another student's sync from your account. That's why test mode
 - **First visit:** their courses are already ticked — from their section (first year)
   or the institute's elective allotment (second year). They press **Enable
   Auto-Sync**.
-- **Their calendar** gets a new calendar named after `THIS_TERM.calendarName`:
+- **Their calendar** gets a new calendar named after the term ("IIM Sirmaur – Term 2"):
   - classes, each course in its own colour
   - 📝 quizzes in red · 📕 mid-terms and end-terms in blue · 🎤 guest lectures in grey
   - the class where course feedback is collected carries the feedback / OLT links
@@ -112,9 +112,13 @@ You never edit these by hand; TermSync rewrites them on every fetch.
 
 ---
 
-## How courses are chosen (`courseSelection`)
+## How courses are chosen
 
-| Mode | Use it for | How a student's courses are found |
+Set by `THIS_TERM.number`: Terms 1–3 use `"section"`, Terms 4–6 `"electives"`
+(which becomes `"pick"` if no allotment link is set). An advanced
+`courseSelection` line in `THIS_TERM` can override it.
+
+| Mode | Used in | How a student's courses are found |
 |---|---|---|
 | `"section"` | First year | Every course in `COURSES` that the timetable runs for the student's **own section** (from `STUDENTS`), plus every course the timetable runs for the whole batch at once (no section). A course with `onlyFor: ["MBATM"]` goes only to rolls starting with MBATM. |
 | `"electives"` | Second year | Read from the institute's published elective allotment sheet: one tab per course, listing every enrolled roll (and section, if the course has several). |
@@ -125,6 +129,17 @@ In every mode the student can still change their selection on the page.
 After the start of term, TermSync re-checks every 6 hours whether a student's courses
 still match their section / the allotment (add-drop). If not, it **tells** them, with
 one button to take the new list — it never changes anyone's courses behind their back.
+
+---
+
+## Optional features
+
+The `FEATURES` block in `config.gs` switches off the admin dashboard, the public usage
+stats, the usage log, subject reps, course outlines, the PDF and wrong-entry reports
+— see the [README's features table](../README.md#features-and-which-ones-you-can-switch-off).
+A switched-off feature is hidden on the page **and** refused by the server
+(`FEATURES_` in `code.gs`: `canViewLogs_`, `getUsageStats`, `logUsage_`,
+`getSubjectReps_`, `siteSettings_`, `getPrintableTimetable`, `submitReport`).
 
 ---
 
@@ -206,9 +221,10 @@ calendar by signature → create / delete / patch → record the revision.
   missing. Runs stop cleanly at 4.5 minutes (`EXECUTION_DEADLINE_MS_`); an unfinished
   sync leaves the revision unapplied so the next run completes it.
 - **The handover** runs once per student per term, latched in their `tt_handover`
-  property against `HANDOVER_VERSION_` (derived from `THIS_TERM.name` and `.batch`, so
-  a new term re-arms it by itself). It crosses out last term's events in
-  `PREVIOUS_TERM.calendarName` (titles struck through, never deleted), clears last
+  property against `HANDOVER_VERSION_` (derived from the term's name and batch, so a
+  new term re-arms it by itself). It crosses out last term's events in
+  `PREVIOUS_TERM_.calendarName` — worked out from `THIS_TERM.number` unless config.gs
+  names it (titles struck through, never deleted), clears last
   term's per-user state, and seeds the new selection: `sectionSelections_` in section
   mode, `handoverSelectionsFromElectives_` reading the allotment tabs in electives mode.
   It only seeds students who were already using TermSync.
@@ -244,3 +260,14 @@ calendar by signature → create / delete / patch → record the revision.
 - **The feedback note is part of the fingerprint**, so it must depend only on the
   class (course, section, start, end) — never on today's date, or every class would
   be rewritten on every sync.
+
+## Term numbers and switches
+
+- `TERM_PRESETS_` / `YEAR_PRESETS_` at the top of `code.gs` hold the standard values for
+  Terms 1–6: quiz/exam tags and their ignore lists, year tags, the course-selection
+  mode. `termValue_` lets any explicit `THIS_TERM` field override them.
+- On the first fetch of a new term (`termSwitchPending`: the stored term label differs
+  from `TERM_CONFIG_.label`), quiz / exam / end-term rows that aren't this term's are
+  **cleared** rather than kept — kept, they would reach the new calendars for any
+  course code that carries over. The term's first published schedule is logged as
+  new quizzes / exams, so students see it in their "Quiz updates".

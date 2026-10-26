@@ -29,16 +29,18 @@
 //   ○ OPTIONAL     Nice to have. Leave it as it is and that feature stays off.
 //   ✓ ALREADY FILLED IN  Correct for IIM Sirmaur — leave it as it is.
 //
-//   The minimum for a working first install: THIS_TERM, MAINTAINER,
-//   DATA_SOURCES.timetableSheet, COURSES and STUDENTS.
+//   The minimum for a working first install: THIS_TERM (number, batch, dates),
+//   MAINTAINER, DATA_SOURCES.timetableSheet, COURSES and STUDENTS.
+//
+//   Every new term: THIS_TERM (new number and dates), COURSES, and any new links.
 //
 // What you never change
 // ─────────────────────
 //   • The NAMES on the left of each setting (THIS_TERM, firstDay, …) — only the
 //     values after the colon or equals sign.
 //   • The other files: code.gs, Index.html, appsscript.json.
-//   • THIS_TERM.calendarName in the middle of a term (students would get a second,
-//     empty calendar). Change it only when you move to a new term.
+//   • THIS_TERM.number in the middle of a term — changing it moves every student
+//     to a new calendar. Change it only when you move to a new term.
 
 // How to read this file
 // ─────────────────────
@@ -55,71 +57,62 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 var THIS_TERM = {
 
-  // What the app calls this term. Shown at the top of the page: "Term 2 · Batch 26-28".
-  name: "Term 2",
+  // WHICH TERM: 1, 2 or 3 in first year · 4, 5 or 6 in second year.
+  // From this one number TermSync works out everything that follows from it:
+  //   • the name shown on the page ("Term 2") and the calendar's name
+  //     ("IIM Sirmaur – Term 2") — a new calendar every term
+  //   • which rows of the quiz / exam sheets are this term's ("T-II", "Term-II", …)
+  //   • which rows of the office's timetable are your batch's ("Ist year" / "2nd Year")
+  //   • how students get their courses:
+  //       Terms 1–3  from their SECTION — every student is given the term's courses
+  //                  for their own section (from STUDENTS below), already ticked
+  //       Terms 4–6  from the institute's ELECTIVE allotment sheet
+  //                  (DATA_SOURCES.electivesSummary); without that link, students
+  //                  tick their own electives
+  //   • last term's calendar, which is crossed out (never deleted) when you move on
+  // ✓ Check settings shows everything it worked out.
+  number: 2,
+
+  // Shown next to the term at the top of the page: "Term 2 · Batch 26-28".
   batch: "Batch 26-28",
 
-  // The Google Calendar the app creates in every student's account. Use a NEW name
-  // every term, so last term's calendar is left alone. Never rename it mid-term:
-  // students would end up with two calendars.
-  calendarName: "IIM Sirmaur – Term 2",
-
   // The app only adds, checks and removes events between these two dates (both
-  // included). Start a week or two before the first class; end a few weeks after
-  // the last end-term exam. Two neighbouring terms may overlap — that is fine.
+  // included). Start a week or two before the first class; end about three weeks
+  // after the last end-term exam. Two neighbouring terms may overlap — that is fine.
   firstDay: "2026-09-14",
   lastDay:  "2027-01-10",
 
-  // HOW STUDENTS GET THEIR COURSES — pick one:
-  //   "section"   First year. Everyone takes the core courses with their own section
-  //               (from the STUDENTS list below). The app ticks them automatically.
-  //   "electives" Second year. Read from the institute's published elective
-  //               allotment sheet (DATA_SOURCES.electivesSummary below).
-  //   "pick"      Students tick their own courses by hand.
-  courseSelection: "section",
-
-  // Which rows of the office's timetable sheet belong to YOUR batch. The sheet has a
-  // "Year/Batch" column shared by both years. Write words that appear in YOUR rows'
-  // cells. Spaces and capital letters don't matter.
-  //   ⚠ Matching is "contains", so a short word can catch the other year too —
-  //   "IYEAR" is inside "IIYEAR". Put such words in ignoreYearTags; those are checked
-  //   first. ✓ Check settings shows which cells were kept and which were ignored.
-  yearTags:       ["1STYEAR", "ISTYEAR"],
-  ignoreYearTags: ["2NDYEAR", "IIYEAR"],
-
-  // Which rows of the quiz and exam sheets belong to THIS term. Those sheets have a
-  // "Batch / Term" column ("MBA 2026-28 T-I", "… 2025-27 Term-IV"). Same rules as
-  // above: termTags = words in this term's cells; ignoreTermTags = words that would
-  // otherwise also match a NEIGHBOURING term ("T-I" is inside "T-II", "T-III" and
-  // "T-IV"!). docs/NEW_TERM.md has a ready-made table for Terms I–VI.
-  termTags:       ["TERM-II", "TERMII", "T-II"],
-  ignoreTermTags: ["TERM-III", "TERMIII", "T-III"],
-
-  // This term exactly as the published Academic Calendar sheet writes it in its
-  // "Term" column (Roman numerals there): "Term I", "Term II", … "Term VI".
-  academicCalendarTerm: "Term II",
-
-  // Backup copy of the key dates, used only when the Academic Calendar sheet can't
-  // be read. Copy them from the official academic calendar.
-  // ⚠ The dates below are EXAMPLES — replace them with your term's real ones.
+  // Backup copy of the key dates (from the official academic calendar). Used to
+  // label exam weeks in the PDF; the live Academic Calendar link, if you set one in
+  // DATA_SOURCES, takes priority. ⚠ These are EXAMPLES — replace them.
   examWindows: [
     { label: "Mid-term exams", start: "2026-10-26", end: "2026-10-30" },
     { label: "End-term exams", start: "2026-12-14", end: "2026-12-22" }
   ],
   termBreak:     { label: "Term break", start: "2026-12-23", end: "2027-01-03" },
   nextTermStart: "2027-01-04"
+
+  // ── Advanced: only if ✓ Check settings shows the standard values don't fit ──
+  // To use one instead of the standard value, delete the // in front of that line
+  // (keep the comma it starts with).
+  //
+  // , name: "Term 2"
+  // , calendarName: "IIM Sirmaur – Term 2"   (long dash –; never change it mid-term)
+  // , courseSelection: "pick"                (or "section" / "electives")
+  // , termTags: ["T-II"], ignoreTermTags: ["T-III"]     (quiz/exam "Batch / Term" words)
+  // , yearTags: ["ISTYEAR"], ignoreYearTags: ["IIYEAR"] (timetable "Year/Batch" words)
+  // , academicCalendarTerm: "Term II"        (as the Academic Calendar sheet writes it)
 };
 
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 2 · LAST TERM                        ★ REQUIRED from your second term onwards
-//     (blank on a first install — filled in when you move to the next term)
+// 2 · LAST TERM                     ○ AUTOMATIC — normally leave all four blank
 // ═══════════════════════════════════════════════════════════════════════════════
-// When a new term starts, copy the OLD values of THIS_TERM.name, calendarName,
-// firstDay and lastDay here BEFORE you change THIS_TERM. The app then crosses out
-// last term's events (it never deletes them) and carries every student over to the
-// new calendar automatically — nobody has to set anything up again.
-// The very first time you set TermSync up, leave all four blank.
+// When you move to a new term, TermSync crosses out last term's events (it never
+// deletes them) and moves every student to the new calendar by itself. It finds
+// last term's calendar from THIS_TERM.number ("… – Term 1" before "… – Term 2").
+// Fill these in ONLY if last term's calendar had a name of your own choosing:
+// copy last term's name, calendar name and dates here exactly.
 var PREVIOUS_TERM = {
   name:         "",
   calendarName: "",
@@ -256,7 +249,9 @@ var SAC_TEAM = `
 // ═══════════════════════════════════════════════════════════════════════════════
 // One per line:   COURSE CODE, SECTION, NAME, ROLL
 // SECTION is the letter for a course taught in several sections ("A"), or - when
-// one rep covers the whole course. Leave empty and the app says "not published yet".
+// one rep covers the whole course. First year: usually one rep per course PER
+// SECTION (ECO, A, … / ECO, B, …). Leave empty and the app says "not published yet".
+// Empty it at the start of every term.
 var SUBJECT_REPS = `
 # EXMPL1, A, FIRST STUDENT NAME, MBA26901
 # EXMPL2, -, SECOND STUDENT NAME, MBA26902
@@ -294,7 +289,25 @@ var COURSE_EVALUATION = {
 
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 12 · TEST MODE                 ○ use when testing — must be [] when you go live
+// 12 · FEATURES                    ○ OPTIONAL — everything is on; switch off with false
+// ═══════════════════════════════════════════════════════════════════════════════
+// README → "Features you can switch off" explains each one.
+var FEATURES = {
+  adminDashboard:   true,   // 🎛️ Admin panel at the foot of the page, for you and SAC_TEAM:
+                            //    who uses TermSync, every timetable change, the student list,
+                            //    wrong-entry reports, and your tools (Force fetch, build check)
+  usageStats:       true,   // the "stats" link every student can open: how many use TermSync
+  usageLog:         true,   // record who enables, syncs now, stops, downloads the PDF (hidden Usage tab).
+                            //    Off = nothing recorded; the stats and Usage view stay empty
+  subjectReps:      true,   // the "subject reps" link and the Subject Rep badge
+  courseOutlines:   true,   // the "course outlines" link (with the 📊 Evaluation pop-ups)
+  pdfDownload:      true,   // "Download PDF" of the whole term
+  reportWrongEntry: true    // "🚩 Report a wrong entry" — reports reach the Admin panel
+};
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 13 · TEST MODE                 ○ use when testing — must be [] when you go live
 // ═══════════════════════════════════════════════════════════════════════════════
 // While this list has rolls in it, TermSync runs ONLY for them — everyone else's
 // calendar is left completely alone. Put your own roll (and one friend's) here
@@ -306,7 +319,7 @@ var TEST_ONLY_FOR = [];
 
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 13 · SIT-IN STUDENTS              ○ RARE — leave empty unless arranged with an
+// 14 · SIT-IN STUDENTS              ○ RARE — leave empty unless arranged with an
 //      instructor; empty it every term
 // ═══════════════════════════════════════════════════════════════════════════════
 // A student attending a course's classes without taking its quizzes or exams.

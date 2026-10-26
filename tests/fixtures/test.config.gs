@@ -1,17 +1,10 @@
 // A filled-in config.gs for the tests: an invented first-year batch in Term 2,
 // matching the made-up sheets in this folder. Nothing here is a real person.
 var THIS_TERM = {
-  name: "Term 2",
+  number: 2,
   batch: "Batch 26-28",
-  calendarName: "IIM Sirmaur – Term 2",
   firstDay: "2026-09-14",
   lastDay:  "2027-01-10",
-  courseSelection: "section",
-  yearTags:       ["1STYEAR", "ISTYEAR"],
-  ignoreYearTags: ["2NDYEAR", "IIYEAR"],
-  termTags:       ["TERM-II", "TERMII", "T-II"],
-  ignoreTermTags: ["TERM-III", "TERMIII", "T-III"],
-  academicCalendarTerm: "Term II",
   examWindows: [
     { label: "Mid-term exams", start: "2026-10-26", end: "2026-10-30" },
     { label: "End-term exams", start: "2026-12-14", end: "2026-12-22" }

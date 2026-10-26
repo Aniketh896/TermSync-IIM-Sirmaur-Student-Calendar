@@ -55,12 +55,45 @@ t.ok(c1.reps.length === 3 && c1.reps[1].name === 'Bimal Example' && c1.reps[2].s
 t.ok(c1.site.outlines.ECO[0].id === 'TESTFILEIDECO0123456789' && c1.site.outlines.FIN[0].id === 'TESTFILEIDFIN0123456789',
   'course outlines accept a Drive link or a bare id');
 t.ok(c1.info.TOUR.onlyFor.join() === 'MBATM', 'onlyFor is kept, upper-cased');
-t.ok(c1.prev.calendarName === '' && c1.prev.label === 'the previous term', 'no previous term on a first install');
+t.ok(c1.prev.calendarName === 'IIM Sirmaur – Term 1' && c1.prev.auto === true,
+  'last term\'s calendar is worked out from the number (harmless on a first install)');
 t.ok(c1.year.join() === 'true,true,false,false', 'yearTags keep "Ist year" / "1st Year", ignoreYearTags drop "2nd Year" / "II Year"');
 t.ok(c1.term.join() === 'true,false,false', 'termTags keep T-II; ignoreTermTags stop T-III; Term-V never matches');
 t.ok(/Test Maintainer/.test(c1.credit) && /created by <a href="https:\/\/www\.linkedin\.com\/in\/aniketh-hotagi\/"/.test(c1.credit),
   'the sign-in card credits the SAC, the maintainer and the creator');
 t.ok(c1.site.creator.name === 'Aniketh Hotagi', 'the page is told who created TermSync');
+
+t.section('THIS_TERM.number sets everything that follows from it');
+const expect = {
+  1: { tags: 'TERM-I,TERMI,T-I,T-1', year: '1STYEAR', mode: 'section', ac: 'Term I', prev: '' },
+  2: { tags: 'TERM-II,TERMII,T-II,T-2', year: '1STYEAR', mode: 'section', ac: 'Term II', prev: 'IIM Sirmaur – Term 1' },
+  3: { tags: 'TERM-III,TERMIII,T-III,T-3', year: '1STYEAR', mode: 'section', ac: 'Term III', prev: 'IIM Sirmaur – Term 2' },
+  4: { tags: 'TERM-IV,TERMIV,T-IV,T-4', year: '2NDYEAR', mode: 'electives', ac: 'Term IV', prev: 'IIM Sirmaur – Term 3' },
+  5: { tags: 'TERM-V,TERMV,T-V,T-5,T5', year: '2NDYEAR', mode: 'electives', ac: 'Term V', prev: 'IIM Sirmaur – Term 4' },
+  6: { tags: 'TERM-VI,TERMVI,T-VI,T-6,T6', year: '2NDYEAR', mode: 'electives', ac: 'Term VI', prev: 'IIM Sirmaur – Term 5' }
+};
+// Real "Batch / Term" cells, and which term each belongs to.
+const CELLS = { 'MBA 2026-28, PhD26 T-I': 1, 'MBA 2026-28 Term-II': 2, 'MBA 2026-28 T-III': 3,
+  'MBA, MBA-TM 2025-27 T-4': 4, 'MBA & MBA-TM 2025-27  Term-V': 5, 'MBA 2025-27 Term-VI': 6 };
+Object.keys(expect).forEach(n => {
+  const e = expect[n];
+  const r = run(BASE.replace('number: 2,', 'number: ' + n + ','), c => ({
+    label: c.TERM_CONFIG_.label, cal: c.TERM_CONFIG_.calendarName, tags: c.TERM_CONFIG_.quizTermTags.join(),
+    year: c.GUEST_YEAR_TAGS_[0], mode: c.COURSE_SELECTION_, ac: c.TERM_CONFIG_.academicTerm, prev: c.PREVIOUS_TERM_.calendarName,
+    kept: Object.keys(CELLS).filter(cell => c.isTermRow_(cell)).map(cell => CELLS[cell]).join() }));
+  t.ok(r.label === 'Term ' + n && r.cal === 'IIM Sirmaur – Term ' + n && r.tags === e.tags && r.year === e.year &&
+       r.mode === e.mode && r.ac === e.ac && r.prev === e.prev,
+    'Term ' + n + ': "' + r.cal + '", ' + r.mode + ', ' + r.year + ', "' + r.ac + '", previous "' + r.prev + '"');
+  t.ok(r.kept === String(n), '  and of six real Batch/Term cells it keeps only Term ' + n + '\'s (kept: ' + r.kept + ')');
+});
+const over = run(BASE.replace('number: 2,', 'number: 2,\n  courseSelection: "pick",\n  calendarName: "My Calendar",'),
+  c => ({ mode: c.COURSE_SELECTION_, cal: c.TERM_CONFIG_.calendarName, prev: c.PREVIOUS_TERM_.calendarName,
+          report: c.settingsReport_({ offline: true, skipTimetable: true }).join('\n') }));
+t.ok(over.mode === 'pick' && over.cal === 'My Calendar', 'a value written in THIS_TERM overrides the standard one');
+t.ok(over.prev === '' && /won't be crossed out/.test(over.report),
+  'with a calendar name of your own, last term\'s is not guessed — and ✓ Check settings says so');
+t.ok(run(BASE.replace('number: 2,', 'number: 7,'), c => c.SETTINGS_PROBLEMS_.join(' ')).indexOf('must be 1, 2, 3, 4, 5 or 6') !== -1,
+  'number 7 is reported');
 
 t.section('typos are reported, never thrown');
 const typo = BASE

@@ -47,9 +47,11 @@ Your account can't open the office's sheet. Ask the PGP office to share it with 
 account.
 
 **"no row matches THIS_TERM.yearTags"**
-✓ Check settings lists every value in the sheet's `Year/Batch` column. Put a word from
-your batch's value in `yearTags` (spaces and capitals don't matter): e.g. `Ist year`
-→ `"ISTYEAR"`.
+First check `THIS_TERM.number` — Terms 1–3 look for first-year rows ("Ist year"),
+Terms 4–6 for second-year rows ("2nd Year"). If the number is right, the sheet writes
+the year in a new way: ✓ Check settings lists every value in its `Year/Batch` column.
+Add an override line to `THIS_TERM` with a word from your batch's value, e.g.
+`, yearTags: ["ISTYEAR"]` (spaces and capitals don't matter).
 
 **"Timetable codes for your batch that are NOT in COURSES: …"**
 Add those codes to `COURSES`, spelled exactly as listed.
@@ -77,9 +79,12 @@ over cell A1 of the `ManualTimetable` tab. Re-paste whenever it changes.
 
 **A quiz or exam is missing from calendars**
 1. Is it in the `QuizData` / `ExamData` tab? If not: ✓ Check settings shows every
-   `Batch / Term` value in that tab and whether it was KEPT. Add a word from this
-   term's value to `termTags`. If a neighbouring term's rows are being kept too, add a
-   word from theirs to `ignoreTermTags`. ([Table of tags per term](NEW_TERM.md#the-tags-for-each-term))
+   `Batch / Term` value in that tab and whether it was KEPT. The tags come from
+   `THIS_TERM.number`, so check that first. If the institute wrote the term in a new
+   way, add an override line to `THIS_TERM` with a word from this term's value — e.g.
+   `, termTags: ["T-II", "TERM2"]` — and, if a neighbouring term's rows get kept too,
+   `, ignoreTermTags: [...]` with a word from theirs.
+   ([The standard tags](NEW_TERM.md#reference-the-standard-tags))
 2. If it *is* there, check the student's courses: quizzes match on course **and**
    section; exams on course only.
 
@@ -133,9 +138,14 @@ calendar.
 Saving reaches the background syncs; the page needs **Deploy → Manage deployments →
 ✏️ → Version: New version → Deploy**.
 
+**A feature has disappeared from the page**
+Check `FEATURES` in `config.gs` — something set to `false` is hidden for everyone.
+
 **Everyone says "being tested"**
 `TEST_ONLY_FOR` still has rolls in it. Empty it (`[]`), Save, Deploy a new version.
 
 **Students still see last term's calendar after a new term**
-Did you run **▶ Start handover**, and is `PREVIOUS_TERM.calendarName` *exactly* last
-term's calendar name (including the long dash –)? See [NEW_TERM.md](NEW_TERM.md).
+Did you raise `THIS_TERM.number`, and run **▶ Start handover**? ✓ Check settings
+should say *"Moving students over from … – Term N"* naming last term's calendar. (If
+you gave calendars names of your own, `PREVIOUS_TERM.calendarName` must match last
+term's exactly, long dash – included.) See [NEW_TERM.md](NEW_TERM.md).

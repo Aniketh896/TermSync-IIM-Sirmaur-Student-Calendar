@@ -104,7 +104,7 @@ async function open(browser, W, email) {
 
     t.section('"pick" mode');
     const Wp = createWorld({ config: fs.readFileSync(path.join(FIX, 'test.config.gs'), 'utf8')
-      .replace('courseSelection: "section"', 'courseSelection: "pick"') });
+      .replace('number: 2,', 'number: 2,\n  courseSelection: "pick",') });
     Wp.ownerFetch();
     page = await open(browser, Wp, B);
     const pick = await page.evaluate(() => ({
@@ -115,6 +115,27 @@ async function open(browser, W, email) {
     t.ok(pick.card === 'none' && pick.btn === 'none' && pick.ticked === 0, 'nothing is filled in, and no Auto-fill button is offered');
 
     t.ok(!page.__errs.length, 'no script errors' + (page.__errs.length ? ': ' + page.__errs.join(' | ') : ''));
+
+    t.section('features switched off in config.gs');
+    const Wo = createWorld({ config: fs.readFileSync(path.join(FIX, 'test.config.gs'), 'utf8') +
+      '\nvar FEATURES = { adminDashboard: false, usageStats: false, subjectReps: false, courseOutlines: false, ' +
+      'pdfDownload: false, reportWrongEntry: false };\n' });
+    Wo.ownerFetch();
+    const sac = 'mba26902@iimsirmaur.ac.in';
+    const rr = Wo.exec(sac, c => c.getMyElectives());
+    Wo.exec(sac, c => c.enableAutoSync(rr.electives.map(e => e.section ? e.code + '-' + e.section : e.code), {}, 'x'));
+    page = await open(browser, Wo, sac);
+    const vis = await page.evaluate(() => {
+      const shown = el => !!el && el.getClientRects().length > 0;
+      const byText = t => Array.from(document.querySelectorAll('.footer button')).find(b => b.textContent.trim() === t);
+      return { reps: shown(byText('subject reps')), outlines: shown(byText('course outlines')), stats: shown(byText('stats')),
+               pdf: shown(document.getElementById('pdfCard')), report: shown(document.querySelector('.report-link')),
+               admin: shown(document.getElementById('adminDash')), credit: shown(document.getElementById('footerCreator')) };
+    });
+    t.ok(!vis.reps && !vis.outlines && !vis.stats, 'the subject reps, course outlines and stats links are gone');
+    t.ok(!vis.pdf && !vis.report, 'so are Download PDF and Report a wrong entry');
+    t.ok(!vis.admin, 'and a SAC member sees no admin panel');
+    t.ok(vis.credit, 'the credits stay');
   } finally {
     await browser.close();
   }

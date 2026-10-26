@@ -99,37 +99,93 @@ t.ok(Wt.calendarsOf(B).length === 0, 'and no calendar is created for them');
 t.ok(/Calendar updated/.test(JSON.stringify(Wt.exec(A, c => c.enableAutoSync(keysOf(resA), {}, 'op-4')))),
   'the listed tester runs normally');
 
-t.section('8 · moving the batch on to Term 3');
-const term3 = W.config
-  .replace('name: "Term 2"', 'name: "Term 3"')
-  .replace('calendarName: "IIM Sirmaur – Term 2"', 'calendarName: "IIM Sirmaur – Term 3"')
-  .replace('var PREVIOUS_TERM = { name: "", calendarName: "", firstDay: "", lastDay: "" };',
-           'var PREVIOUS_TERM = { name: "Term 2", calendarName: "IIM Sirmaur – Term 2", firstDay: "2026-09-14", lastDay: "2027-01-10" };');
-W.config = term3;
+t.section('8 · moving the batch on to Term 3 — only the number changes');
+// Moving on a term needs a new number (and, in real life, new dates and courses).
+// The calendar name, the tags and last term's calendar all follow from it.
+W.config = W.config.replace('number: 2,', 'number: 3,');
+t.ok(W.exec(W.owner, c => c.PREVIOUS_TERM_.calendarName) === CAL2 && W.exec(W.owner, c => c.TERM_CONFIG_.calendarName) === CAL3,
+  'last term\'s calendar ("… – Term 2") and the new one ("… – Term 3") are worked out from the number');
 const start = W.exec(W.owner, c => { c.startTermHandover(); return c.__alerts.map(a => a.join(' ')).join('\n'); });
 t.ok(/Give them every Term 3 course for their own section/.test(start), 'the handover dialog describes section mode');
 t.ok(/handover started/.test(start), 'and the handover starts');
+const quiz3 = W.SS.getSheetByName('QuizData')._grid.slice(1).filter(r => r[3]).map(r => r[3]);
+t.ok(quiz3.join() === 'FIN', 'QuizData now holds only the Term III quiz (FIN) — the Term II ones are gone (' + quiz3.join() + ')');
 const hb = W.exec(B, c => c.backgroundSync({ triggerUid: W.trigs(B)[0].getUniqueId() }));
 t.ok(/Calendar updated/.test(String(hb)), 'the student\'s own next background run moves them: ' + String(hb).slice(0, 60));
 const old = W.eventsOf(B, CAL2);
 t.ok(old.length === want && old.every(e => e.summary.indexOf('̶') !== -1),
   'every Term 2 event is crossed out and kept (' + old.length + ')');
 t.ok(JSON.parse(W.USER_PROPS[B].tt_selections).join(' ') === selB.join(' '), 'their Term 3 courses were filled in from their section');
-t.ok(W.eventsOf(B, CAL3).length === want, 'and the Term 3 calendar is built (' + W.eventsOf(B, CAL3).length + ' events)');
+const classes3 = classesFor(W, selB);
+const q3 = W.eventsOf(B, CAL3).filter(e => /^📝/.test(e.summary)).map(e => e.summary.split(' ')[1]);
+t.ok(W.eventsOf(B, CAL3).length === classes3 + 1 && q3.join() === 'FIN',
+  'and the Term 3 calendar is built: its classes plus the Term III FIN quiz, no Term II quiz (' + W.eventsOf(B, CAL3).length + ' events)');
 const nobody = 'mba26904@iimsirmaur.ac.in';   // never switched the tool on
 W.exec(nobody, c => c.backgroundSync({}));
 t.ok(W.calendarsOf(nobody).length === 0, 'a student who never used TermSync gets nothing they did not ask for');
 
-t.section('9 · "pick" mode and "electives" without a link');
-const pickCfg = fs.readFileSync(path.join(__dirname, 'fixtures', 'test.config.gs'), 'utf8')
-  .replace('courseSelection: "section"', 'courseSelection: "pick"');
+t.section('9 · first year → second year (Term 3 → Term 4): electives');
+// The same batch is now second-year: the office's sheet labels its rows "2nd Year",
+// and courses come from the institute's elective allotment instead of sections.
+W.mirror = W.mirror.filter(r => r[5] !== '2nd Year').map(r => r.map(v => v === 'Ist year' ? '2nd Year' : v));
+W.electives = {
+  summary: [['Finance Basics', 'FIN', '2', '2'], ['Marketing Basics', 'MKT', '1', '2'],
+            ['Leadership Lecture Series', 'LEAD', '1', '-'], ['Economics for Managers', 'ECO', '1', '2']],
+  tabs: { FIN: [['MBA26903', 'BIMAL EXAMPLE', 'x', 'B'], ['MBA26902', 'ASHA EXAMPLE', 'x', 'A']],
+          MKT: [['MBA26903', 'BIMAL EXAMPLE', 'x', 'B']],
+          LEAD: [['MBA26903', 'BIMAL EXAMPLE', 'x', '']],
+          ECO: [['MBA26902', 'ASHA EXAMPLE', 'x', 'A']] }
+};
+W.config = W.config.replace('number: 3,', 'number: 4,')
+  .replace('electivesSummary: "",', 'electivesSummary: "https://docs.google.com/spreadsheets/d/e/2PACX-TESTELECTIVES/pubhtml?gid=400",');
+const y2 = W.exec(W.owner, c => ({ mode: c.enrolmentMode_(), years: c.GUEST_YEAR_TAGS_, prev: c.PREVIOUS_TERM_.calendarName }));
+t.ok(y2.mode === 'electives' && y2.years.indexOf('2NDYEAR') !== -1 && y2.prev === CAL3,
+  'number 4 means: second-year rows, electives, and Term 3\'s calendar to cross out');
+const start4 = W.exec(W.owner, c => { c.startTermHandover(); return c.__alerts.map(a => a.join(' ')).join('\n'); });
+t.ok(/elective tabs/.test(start4), 'the handover dialog says courses come from the elective tabs');
+t.ok(W.masterRows().length === 129, 'the timetable\'s "2nd Year" rows are now this batch\'s (' + W.masterRows().length + ')');
+const pre4 = W.exec(W.owner, c => c.enrolmentPreflightReport_().join('\n'));
+t.ok(/All \d+ course tabs read cleanly/.test(pre4), 'the pre-flight reads every elective tab');
+W.exec(B, c => c.backgroundSync({ triggerUid: W.trigs(B)[0].getUniqueId() }));
+const sel4 = JSON.parse(W.USER_PROPS[B].tt_selections || '[]');
+t.ok(sel4.slice().sort().join(' ') === 'FIN-B LEAD MKT-B', 'their electives come from the allotment, with sections (' + sel4.join(' ') + ')');
+t.ok(W.eventsOf(B, CAL3).every(e => e.summary.indexOf('̶') !== -1), 'Term 3 is crossed out');
+t.ok(W.eventsOf(B, 'IIM Sirmaur – Term 4').length === classesFor(W, sel4), 'and the Term 4 calendar holds exactly those electives');
+const me4 = W.exec(A, c => c.getMyElectives());
+t.ok(me4.ok && me4.electives.map(e => e.code + '-' + e.section).sort().join(' ') === 'ECO-A FIN-A',
+  'a student opening the page sees their own electives filled in');
+
+t.section('10 · "pick" mode, and "electives" without a link');
+const base = fs.readFileSync(path.join(__dirname, 'fixtures', 'test.config.gs'), 'utf8');
+const pickCfg = base.replace('number: 2,', 'number: 2,\n  courseSelection: "pick",');
 const Wp = createWorld({ config: pickCfg });
 Wp.ownerFetch();
 t.ok(Wp.exec(B, c => c.getMyElectives()).reason === 'not_configured', 'pick: nothing is looked up');
 t.ok(Wp.exec(B, c => c.siteSettings_().selection) === 'pick', 'and the page is told to hide Auto-fill');
-const elecNoLink = createWorld({ config: pickCfg.replace('courseSelection: "pick"', 'courseSelection: "electives"') });
-t.ok(elecNoLink.exec(B, c => c.enrolmentMode_()) === 'pick', '"electives" with no electivesSummary link behaves as "pick"');
+const elecNoLink = createWorld({ config: base.replace('number: 2,', 'number: 4,') });
+t.ok(elecNoLink.exec(B, c => c.enrolmentMode_()) === 'pick', 'a second-year term with no electivesSummary link: students pick');
 t.ok(/electivesSummary is blank/.test(elecNoLink.exec(W.owner, c => c.settingsReport_().join('\n'))),
   'and ✓ Check settings says why');
+
+t.section('11 · features switched off');
+const offCfg = base.replace(/var FEATURES = \{[\s\S]*?\n\};|$/, '') + '\nvar FEATURES = { adminDashboard: false, usageStats: false, ' +
+  'usageLog: false, subjectReps: false, courseOutlines: false, pdfDownload: false, reportWrongEntry: false };\n';
+const Wo = createWorld({ config: offCfg });
+Wo.ownerFetch();
+const rOff = Wo.exec(B, c => c.getMyElectives());
+Wo.exec(B, c => c.enableAutoSync(keysOf(rOff), {}, 'op-off'));
+const off = Wo.exec('mba26902@iimsirmaur.ac.in', c => ({   // a SAC member
+  viewer: c.getSyncHealth().isLogViewer, log: c.getUsageLog(), stats: c.getUsageStats(), reps: c.getSubjectReps_(),
+  outlines: Object.keys(c.siteSettings_().outlines).length, report: c.submitReport({ course: 'ECO', details: 'x' }),
+  usageEvents: Object.keys(c.PropertiesService.getScriptProperties().getProperties()).filter(k => /^tt_usage_evt_/.test(k)).length }));
+const pdf = Wo.exec(B, c => c.getPrintableTimetable());
+t.ok(off.viewer === false && off.log && off.log.ok === false, 'adminDashboard: the SAC team gets no admin panel, and the server refuses');
+t.ok(off.stats.off === true, 'usageStats: the public stats answer nothing');
+t.ok(off.usageEvents === 0, 'usageLog: enabling recorded nothing');
+t.ok(off.reps === null && off.outlines === 0, 'subjectReps / courseOutlines: nothing is sent to the page');
+t.ok(off.report.ok === false && pdf.ok === false, 'reportWrongEntry / pdfDownload: refused');
+t.ok(Wo.eventsOf(B, CAL2).length === want, 'and the calendar itself is exactly the same as with everything on');
+t.ok(/is not a feature TermSync knows/.test(createWorld({ config: base + '\nvar FEATURES = { adminDashbord: false };\n' })
+  .exec(W.owner, c => c.SETTINGS_PROBLEMS_.join(' '))), 'a misspelt feature is reported');
 
 t.done('First-year end to end verified');

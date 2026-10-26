@@ -98,6 +98,11 @@ function createWorld(opts) {
     midterm: opts.midterm !== undefined ? opts.midterm : fs.readFileSync(path.join(FIX, 'midterm.csv'), 'utf8')
   };
   W.fetched = [];   // every URL the code asked for, for "did it call out?" checks
+  // A published elective-allotment document, if a test sets one:
+  // { summary: [[title, code, students, sections]], tabs: { CODE: [[roll, name, email, section]] } }.
+  // Served the way Google serves a published spreadsheet: a pubhtml page listing
+  // each tab's gid, and one CSV per tab.
+  W.electives = opts.electives || null;
 
   const SS = { _s: {}, getSheetByName(n) { return this._s[n] || null; }, insertSheet(n) { return (this._s[n] = makeSheet(n)); },
     getSheets() { return Object.values(this._s); }, setActiveSheet() {},
@@ -170,6 +175,20 @@ function createWorld(opts) {
     W.fetched.push(req.url);
     if (/2PACX-TESTSCHEDULEDOC/.test(req.url) && /gid=111\b/.test(req.url)) return serve(W.tabs.quiz);
     if (/2PACX-TESTSCHEDULEDOC/.test(req.url) && /gid=222\b/.test(req.url)) return serve(W.tabs.midterm);
+    if (/2PACX-TESTELECTIVES/.test(req.url) && W.electives) {
+      const codes = Object.keys(W.electives.tabs);
+      if (/pubhtml/.test(req.url)) {
+        return R(200, codes.map((c, i) => 'items.push({name: "' + c.replace(/&/g, '\\x26') +
+          '", pageUrl: "https://docs.google.com/x?gid=' + (500 + i) + '"').join('\n'));
+      }
+      const gid = Number((/gid=(\d+)/.exec(req.url) || [])[1]);
+      const csvOf = rows => rows.map(r => r.join(',')).join('\n');
+      if (gid === 400) return R(200, csvOf([['Course Title', 'abbreviation', 'No of Students', '# Section', 'Group Email Id']]
+        .concat(W.electives.summary)) + '\n'.repeat(5));
+      if (gid >= 500 && gid < 500 + codes.length) {
+        return R(200, csvOf([['Roll No', 'Name', 'Email Id', 'Section']].concat(W.electives.tabs[codes[gid - 500]])));
+      }
+    }
     return R(404, 'not published');
   }
 

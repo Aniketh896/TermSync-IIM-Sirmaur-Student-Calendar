@@ -29,11 +29,11 @@ Open `app/config.gs` in a text editor (Notepad on Windows, TextEdit on Mac — i
 TextEdit choose **Format → Make Plain Text** first). Every setting has a note above
 it saying what it is and where to find it. Fill in, in this order:
 
-1. **`THIS_TERM`** — term name, batch, calendar name, first and last day, and
-   `courseSelection` (`"section"` for first year). For `termTags`, `ignoreTermTags`,
-   `yearTags` and `ignoreYearTags`, copy your term's row from
-   [the table in NEW_TERM.md](NEW_TERM.md#the-tags-for-each-term) — Step 6 shows you
-   whether they're right.
+1. **`THIS_TERM`** — the term **number** (1–6), your batch, the first and last day,
+   and the exam weeks. From the number, TermSync works out the term's name, its
+   calendar's name, which quiz / exam rows are this term's, and how students get
+   their courses (by section in Terms 1–3, from the elective allotment in 4–6).
+   Step 6 shows you what it worked out.
 2. **`MAINTAINER`** — your name, your roll number, your LinkedIn link.
 3. **`DATA_SOURCES` → `timetableSheet`** — open the office's timetable spreadsheet and
    copy the link from the address bar. Add the quiz and exam links if you have them.
@@ -43,6 +43,11 @@ it saying what it is and where to find it. Fill in, in this order:
 5. **`COURSES`** — the term's course codes and names. **Not sure of the codes?** Put
    in what you know; Step 6 lists every code the timetable uses that's missing.
 6. **`SAC_TEAM`** — the SAC members' rolls (optional, but they get the admin panel).
+7. **`FEATURES`** — everything is switched on. Read
+   [the features table](../README.md#features-and-which-ones-you-can-switch-off) and
+   set any you don't want to `false`.
+8. Terms 4–6 only: **`DATA_SOURCES` → `electivesSummary`**, the published link to the
+   elective allotment sheet's Summary tab.
 
 Everything else is optional and can be added later. Save the file.
 
@@ -165,9 +170,9 @@ After Step 5, the **Execution log** opens at the bottom with a report like this:
   press **Save**, and run `checkSettingsLog` again. Repeat until there are none.
 - Read the **⚠** lines; each is either fine or a quick fix.
 - **Check the KEPT / ignored lines.** Your batch's rows must say KEPT and the other
-  year's must say ignored. If not, change `yearTags` / `termTags` in `config.gs` to
-  words from the values shown. ([NEW_TERM.md](NEW_TERM.md#the-tags-for-each-term) has
-  a ready table.)
+  year's must say ignored; this term's quiz / exam rows KEPT, others ignored. They
+  almost always are. If not, see [NEW_TERM.md → the standard tags](NEW_TERM.md#reference-the-standard-tags)
+  for how to override them.
 
 ---
 
@@ -186,10 +191,12 @@ This also switches on the automatic 30-minute refresh. You don't need to set a t
 
 ---
 
-## Step 8 · Share the spreadsheet with your batch (view only) — 2 min
+## Step 8 · Share the spreadsheet with your batch (view only) — 2 min — required
 
-Each student's TermSync reads the timetable from this spreadsheet *as them*, so they
-need permission to view it.
+**This step is required.** Each student's automatic sync runs *as that student*, and
+reads this term's timetable from this spreadsheet. Without view access their syncs
+can't read it, and their calendars stay empty. Viewers can look but never change
+anything.
 
 1. In the spreadsheet: **Share** (top right).
 2. Under **General access**, change *Restricted* to **IIM Sirmaur** and leave the role
@@ -233,11 +240,12 @@ them. Don't add anything else sensitive to this spreadsheet.
    **✦ Maintainer** badge.
 2. Your courses should already be ticked ("Your courses are already selected").
    Press **Enable Auto-Sync**.
-3. Open [Google Calendar](https://calendar.google.com). A calendar named after
-   `THIS_TERM.calendarName` appears with your classes — 📝 quizzes in red, 📕 exams in
-   blue, 🎤 guest lectures in grey.
-4. Back in TermSync, try **Download PDF**.
-5. At the bottom of the page, open **🎛️ Admin** — only the SAC team and you see it.
+3. Open [Google Calendar](https://calendar.google.com). A calendar named after the
+   term (e.g. "IIM Sirmaur – Term 2") appears with your classes — 📝 quizzes in red,
+   📕 exams in blue, 🎤 guest lectures in grey.
+4. Back in TermSync, try **Download PDF** (unless you switched it off in `FEATURES`).
+5. At the bottom of the page, open **🎛️ Admin** — only the SAC team and you see it
+   (unless switched off).
 6. In the spreadsheet: **📊 Tool Stats → ✓ Enrolment pre-flight (every student)**. It
    checks every student on the roster and should end with **"Clear for go-live"**.
 

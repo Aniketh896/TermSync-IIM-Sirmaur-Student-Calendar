@@ -1425,6 +1425,21 @@
             font-weight: 600;
         }
 
+        /* Optional features (config.gs → FEATURES). The wrappers take no space of
+           their own, so the footer's spacing is unchanged; a switched-off feature
+           gets a no-<name> class on <body> (see applySite) and disappears. */
+        .footer [data-feature] {
+            display: contents;
+        }
+
+        body.no-subjectReps [data-feature="subjectReps"],
+        body.no-courseOutlines [data-feature="courseOutlines"],
+        body.no-usageStats [data-feature="usageStats"],
+        body.no-reportWrongEntry [data-feature="reportWrongEntry"],
+        body.no-pdfDownload [data-feature="pdfDownload"] {
+            display: none !important;
+        }
+
         #footerMaintainerWrap {
             align-items: center;
             gap: 5px;
@@ -3699,7 +3714,7 @@
     <div class="card" id="toolsPanel" style="display:none;">
         <div class="panel-head">Your calendar</div>
 
-        <div class="panel-section" id="pdfCard" style="display:none;">
+        <div class="panel-section" id="pdfCard" data-feature="pdfDownload" style="display:none;">
             <div class="pdf-card-row">
                 <div class="pdf-info">
                     <div class="pdf-title">📲 Take your timetable offline</div>
@@ -3766,7 +3781,7 @@
             schedule there before relying on these reminders. The creator is not responsible for missed classes,
             incorrect entries, scheduling conflicts, or any other issue arising from use of this tool. Use at your own
             discretion.
-            <div class="report-cta">
+            <div class="report-cta" data-feature="reportWrongEntry">
                 Found something that doesn't match the official timetable?
                 <a href="#" class="report-link" onclick="openReportModal(event)">🚩 Report a wrong entry</a>
             </div>
@@ -3863,12 +3878,12 @@
         <span style="color:var(--border);">·</span>
         <span class="footer-creator" id="footerCreator">created by <a href="https://www.linkedin.com/in/aniketh-hotagi/" target="_blank"
                 rel="noopener">Aniketh Hotagi</a></span>
-        <span style="color:var(--border);">·</span>
-        <button class="usage-link" onclick="openSrModal()">subject reps</button>
-        <span style="color:var(--border);">·</span>
-        <button class="usage-link" onclick="openCoModal()">course outlines</button>
-        <span style="color:var(--border);">·</span>
-        <button class="usage-link" onclick="openStatsModal()">stats</button>
+        <span data-feature="subjectReps"><span style="color:var(--border);">·</span>
+            <button class="usage-link" onclick="openSrModal()">subject reps</button></span>
+        <span data-feature="courseOutlines"><span style="color:var(--border);">·</span>
+            <button class="usage-link" onclick="openCoModal()">course outlines</button></span>
+        <span data-feature="usageStats"><span style="color:var(--border);">·</span>
+            <button class="usage-link" onclick="openStatsModal()">stats</button></span>
     </div>
 
     <div class="stats-overlay" id="statsOverlay" onclick="closeStatsModal(event)">
@@ -4107,7 +4122,9 @@
                 parts.push('<b>' + mismatch.map(escapeHtml).join(", ") + '</b> is on the institute\'s ' +
                     'timetable but none of its classes matched your selection — usually because the ' +
                     'group recorded against you differs from the group the timetable runs. ' +
-                    'Use <b>Report a wrong entry</b> below so it can be corrected; your other ' +
+                    ((SITE_.features && SITE_.features.reportWrongEntry === false)
+                        ? 'Tell the SAC so it can be corrected; your other '
+                        : 'Use <b>Report a wrong entry</b> below so it can be corrected; your other ') +
                     'courses are unaffected.');
             }
             if (unresolved.length) {
@@ -5052,6 +5069,10 @@
                 if (named && site.maintainer.url) link.href = site.maintainer.url;
                 else link.removeAttribute("href");
             }
+            var features = site.features || {};
+            ["subjectReps", "courseOutlines", "usageStats", "reportWrongEntry", "pdfDownload"].forEach(function (f) {
+                document.body.classList.toggle("no-" + f, features[f] === false);
+            });
             var creator = document.getElementById("footerCreator");
             if (creator) creator.style.display = (named && site.creator && who === site.creator.name) ? "none" : "";
             updateElectiveFetchLink();
