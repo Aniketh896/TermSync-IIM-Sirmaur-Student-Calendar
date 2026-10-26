@@ -20,7 +20,7 @@
     "iim-sirmaur"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "scripts": {
     "test": "node tests/run_all.js",
