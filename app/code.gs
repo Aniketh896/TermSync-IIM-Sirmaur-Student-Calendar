@@ -2571,7 +2571,12 @@ function testTimetableSourceLog() {
 // rather than as a silently empty calendar.
 //
 // Read-only: touches no calendar, no sheet and no student.
-function settingsReport_() {
+//
+// `opts.offline` (tests/check_config.js, run on a computer): the published links
+// can't be fetched from there, so their checks are skipped and said to be;
+// `opts.skipTimetable` likewise when no copy of the timetable was supplied.
+function settingsReport_(opts) {
+  opts = opts || {};
   var ok = [], warn = [], bad = [];
   var roster = getRosterIndex_();
   var rosterRolls = Object.keys(roster);
@@ -2644,7 +2649,8 @@ function settingsReport_() {
   else ok.push('Students: ' + rosterRolls.length + ' — sections ' + Object.keys(sections).sort().map(function (s) {
     return s + ':' + sections[s]; }).join('  ') + '.');
   if (noSection.length && enrolmentMode_() === "section") {
-    bad.push(noSection.length + ' student(s) have no section, so they get no courses automatically: ' + noSection.slice(0, 10).join(', '));
+    warn.push(noSection.length + ' student(s) have no section, so they get no courses automatically (they can ' +
+      'still pick by hand): ' + noSection.slice(0, 10).join(', '));
   }
 
   // 8 – 13 · Optional lists
@@ -2676,95 +2682,104 @@ function settingsReport_() {
   });
 
   // 5 · Live sources, read the way the fetch reads them
-  try {
-    var got = getTimetableRows_(null);
-    var grid = got.rows || [];
-    var h = mirrorHeaderRow_(grid);
-    if (h === -1) {
-      warn.push('Timetable: read from the ' + got.source + ', but it has no header row with Date, Code, ' +
-        'Year/Batch, Grp and Classroom. Run "Test timetable source" for details.');
-    } else {
-      var head = grid[h].map(function (x) { return String(x == null ? "" : x).toLowerCase().trim(); });
-      var yc = head.indexOf("year/batch"), cc = head.indexOf("code"), gc = head.indexOf("grp");
-      var years = {}, ours = {}, ourGroups = {};
-      for (var i = h + 1; i < grid.length; i++) {
-        var code = String(grid[i][cc] || "").trim();
-        if (!code) continue;
-        var y = String(grid[i][yc] || "").trim();
-        years[y] = (years[y] || 0) + 1;
-        if (isOurYearRow_(y) && !/quiz|phd class/i.test(code)) {
-          ours[code] = (ours[code] || 0) + 1;
-          var g = String(grid[i][gc] || "").trim().toUpperCase();
-          if (g) ourGroups[g] = true;
+  if (opts.skipTimetable) {
+    ok.push('Timetable: not checked here — run ✓ Check settings in Apps Script, where the real sheet can be read.');
+  } else {
+    try {
+      var got = getTimetableRows_(null);
+      var grid = got.rows || [];
+      var h = mirrorHeaderRow_(grid);
+      if (h === -1) {
+        warn.push('Timetable: read from the ' + got.source + ', but it has no header row with Date, Code, ' +
+          'Year/Batch, Grp and Classroom. Run "Test timetable source" for details.');
+      } else {
+        var head = grid[h].map(function (x) { return String(x == null ? "" : x).toLowerCase().trim(); });
+        var yc = head.indexOf("year/batch"), cc = head.indexOf("code"), gc = head.indexOf("grp");
+        var years = {}, ours = {}, ourGroups = {};
+        for (var i = h + 1; i < grid.length; i++) {
+          var code = String(grid[i][cc] || "").trim();
+          if (!code) continue;
+          var y = String(grid[i][yc] || "").trim();
+          years[y] = (years[y] || 0) + 1;
+          if (isOurYearRow_(y) && !/quiz|phd class/i.test(code)) {
+            ours[code] = (ours[code] || 0) + 1;
+            var g = String(grid[i][gc] || "").trim().toUpperCase();
+            if (g) ourGroups[g] = true;
+          }
+        }
+        Object.keys(years).forEach(function (y) {
+          ok.push('Timetable "Year/Batch" = "' + y + '": ' + years[y] + ' row(s) — ' +
+            (isOurYearRow_(y) ? 'KEPT (your batch)' : 'ignored'));
+        });
+        var ourCodes = Object.keys(ours);
+        if (!ourCodes.length) bad.push('Timetable: no row matches THIS_TERM.yearTags. Pick words from the "Year/Batch" values listed above.');
+        var unknown = ourCodes.filter(function (c) { return !COURSE_INFO_[c]; });
+        if (unknown.length) {
+          bad.push('Timetable codes for your batch that are NOT in COURSES (they would show without a name, and ' +
+            '"section" mode would skip them): ' + unknown.join(', '));
+        }
+        var unused = codes.filter(function (c) { return !ours[c]; });
+        if (unused.length && ourCodes.length) {
+          warn.push('COURSES not on the timetable yet (fine for courses without classes): ' + unused.join(', '));
+        }
+        if (ourCodes.length) ok.push('Timetable: ' + ourCodes.length + ' course code(s) for your batch, read from the ' + got.source + '.');
+        if (enrolmentMode_() === "section") {
+          var missingSec = Object.keys(sections).filter(function (s) { return !ourGroups[s]; });
+          if (missingSec.length && Object.keys(ourGroups).length) {
+            warn.push('Roster sections with no timetable group: ' + missingSec.join(', ') +
+              ' (timetable groups: ' + Object.keys(ourGroups).sort().join(', ') + ').');
+          }
         }
       }
-      Object.keys(years).forEach(function (y) {
-        ok.push('Timetable "Year/Batch" = "' + y + '": ' + years[y] + ' row(s) — ' +
-          (isOurYearRow_(y) ? 'KEPT (your batch)' : 'ignored'));
-      });
-      var ourCodes = Object.keys(ours);
-      if (!ourCodes.length) bad.push('Timetable: no row matches THIS_TERM.yearTags. Pick words from the "Year/Batch" values listed above.');
-      var unknown = ourCodes.filter(function (c) { return !COURSE_INFO_[c]; });
-      if (unknown.length) {
-        bad.push('Timetable codes for your batch that are NOT in COURSES (they would show without a name, and ' +
-          '"section" mode would skip them): ' + unknown.join(', '));
-      }
-      var unused = codes.filter(function (c) { return !ours[c]; });
-      if (unused.length && ourCodes.length) {
-        warn.push('COURSES not on the timetable yet (fine for courses without classes): ' + unused.join(', '));
-      }
-      if (ourCodes.length) ok.push('Timetable: ' + ourCodes.length + ' course code(s) for your batch, read from the ' + got.source + '.');
-      if (enrolmentMode_() === "section") {
-        var missingSec = Object.keys(sections).filter(function (s) { return !ourGroups[s]; });
-        if (missingSec.length && Object.keys(ourGroups).length) {
-          warn.push('Roster sections with no timetable group: ' + missingSec.join(', ') +
-            ' (timetable groups: ' + Object.keys(ourGroups).sort().join(', ') + ').');
-        }
-      }
+    } catch (e) {
+      bad.push('Timetable: ' + getErrorMessage_(e));
     }
-  } catch (e) {
-    bad.push('Timetable: ' + getErrorMessage_(e));
   }
 
-  [{ key: "quizSchedule", url: QUIZ_CSV_URL, what: "Quiz schedule" },
-   { key: "midTermSchedule", url: EXAM_CSV_URL, what: "Mid-term schedule" },
-   { key: "endTermSchedule", url: ENDTERM_CSV_URL, what: "End-term schedule" }].forEach(function (src) {
-    if (src.url === PENDING_URL_) { ok.push(src.what + ': not set (feature off).'); return; }
-    try {
-      var resp = UrlFetchApp.fetch(src.url, { muteHttpExceptions: true });
-      if (resp.getResponseCode() !== 200) {
-        bad.push(src.what + ': the link answered HTTP ' + resp.getResponseCode() + '. Is that tab published to the web?');
-        return;
+  if (opts.offline) {
+    ok.push('Published links (quizzes, exams, academic calendar, electives): not checked here — ' +
+      'run ✓ Check settings in Apps Script, where they can be read.');
+  } else {
+    [{ key: "quizSchedule", url: QUIZ_CSV_URL, what: "Quiz schedule" },
+     { key: "midTermSchedule", url: EXAM_CSV_URL, what: "Mid-term schedule" },
+     { key: "endTermSchedule", url: ENDTERM_CSV_URL, what: "End-term schedule" }].forEach(function (src) {
+      if (src.url === PENDING_URL_) { ok.push(src.what + ': not set (feature off).'); return; }
+      try {
+        var resp = UrlFetchApp.fetch(src.url, { muteHttpExceptions: true });
+        if (resp.getResponseCode() !== 200) {
+          bad.push(src.what + ': the link answered HTTP ' + resp.getResponseCode() + '. Is that tab published to the web?');
+          return;
+        }
+        var csv = Utilities.parseCsv(resp.getContentText() || "");
+        var hr = -1;
+        for (var r = 0; r < Math.min(csv.length, 10); r++) {
+          if (findQuizCol_(csv[r], ["date"]) !== -1 && findQuizCol_(csv[r], ["course code", "code"]) !== -1) { hr = r; break; }
+        }
+        if (hr === -1) { bad.push(src.what + ': no header row with Date and Course Code — is this the right tab?'); return; }
+        var tc = findQuizCol_(csv[hr], ["batch / term", "batch/term", "batch", "term"]);
+        if (tc === -1) { ok.push(src.what + ': readable (no Batch / Term column — every row counts).'); return; }
+        var cells = {};
+        for (var q = hr + 1; q < csv.length; q++) {
+          var cell = String(csv[q][tc] || "").trim();
+          if (cell) cells[cell] = (cells[cell] || 0) + 1;
+        }
+        var kept = 0;
+        Object.keys(cells).forEach(function (c) {
+          var keep = isTermRow_(c);
+          if (keep) kept += cells[c];
+          ok.push(src.what + ' "' + c + '": ' + cells[c] + ' row(s) — ' + (keep ? 'KEPT (this term)' : 'ignored'));
+        });
+        if (Object.keys(cells).length && !kept) {
+          warn.push(src.what + ': no row matches THIS_TERM.termTags yet. Fine if this term has none published; ' +
+            'otherwise pick words from the values listed above.');
+        }
+      } catch (e2) {
+        bad.push(src.what + ': ' + getErrorMessage_(e2));
       }
-      var csv = Utilities.parseCsv(resp.getContentText() || "");
-      var hr = -1;
-      for (var r = 0; r < Math.min(csv.length, 10); r++) {
-        if (findQuizCol_(csv[r], ["date"]) !== -1 && findQuizCol_(csv[r], ["course code", "code"]) !== -1) { hr = r; break; }
-      }
-      if (hr === -1) { bad.push(src.what + ': no header row with Date and Course Code — is this the right tab?'); return; }
-      var tc = findQuizCol_(csv[hr], ["batch / term", "batch/term", "batch", "term"]);
-      if (tc === -1) { ok.push(src.what + ': readable (no Batch / Term column — every row counts).'); return; }
-      var cells = {};
-      for (var q = hr + 1; q < csv.length; q++) {
-        var cell = String(csv[q][tc] || "").trim();
-        if (cell) cells[cell] = (cells[cell] || 0) + 1;
-      }
-      var kept = 0;
-      Object.keys(cells).forEach(function (c) {
-        var keep = isTermRow_(c);
-        if (keep) kept += cells[c];
-        ok.push(src.what + ' "' + c + '": ' + cells[c] + ' row(s) — ' + (keep ? 'KEPT (this term)' : 'ignored'));
-      });
-      if (Object.keys(cells).length && !kept) {
-        warn.push(src.what + ': no row matches THIS_TERM.termTags yet. Fine if this term has none published; ' +
-          'otherwise pick words from the values listed above.');
-      }
-    } catch (e2) {
-      bad.push(src.what + ': ' + getErrorMessage_(e2));
-    }
-  });
+    });
+  }
 
-  if (enrolmentMode_() === "electives") {
+  if (!opts.offline && enrolmentMode_() === "electives") {
     try {
       var cat = getElectiveCatalogue_();
       if (cat.length) ok.push('Elective allotment: ' + cat.length + ' course(s) on the Summary tab.');
@@ -2773,7 +2788,7 @@ function settingsReport_() {
       bad.push('Elective allotment: ' + getErrorMessage_(e3));
     }
   }
-  if (ACADEMIC_CAL_CSV_URL !== PENDING_URL_) {
+  if (!opts.offline && ACADEMIC_CAL_CSV_URL !== PENDING_URL_) {
     var rowsAc = getAcademicCalRows_(true);
     if (!rowsAc) bad.push('Academic calendar: the link could not be read. Is that tab published to the web?');
     else {
@@ -8620,9 +8635,9 @@ function backgroundSyncLocked_(forceSync, opts) {
     var eventTitle = ev.code + (ev.section ? " (" + ev.section + ")" : "") + ": " + displayName;
 
     var descLines = [];
-    if (area && credits) descLines.push(area + " · " + credits + " credits");
+    if (area && credits) descLines.push(area + " · " + credits + (Number(credits) === 1 ? " credit" : " credits"));
     else if (area) descLines.push(area);
-    else if (credits) descLines.push(credits + " credits");
+    else if (credits) descLines.push(credits + (Number(credits) === 1 ? " credit" : " credits"));
     if (descLines.length > 0) descLines.push("");
     // Session number (institute column E / MasterData column I). Shown above the
     // instructor when present; rows that omit one simply skip the line.
@@ -10137,9 +10152,9 @@ function appendQuizEvents_(prepared, selectedCodes, reminderMinutes) {
       (quizEval ? " (part of " + quizEval.weight + "%)" : "");
 
     var descLines = [];
-    if (area && credits) descLines.push(area + " · " + credits + " credits");
+    if (area && credits) descLines.push(area + " · " + credits + (Number(credits) === 1 ? " credit" : " credits"));
     else if (area) descLines.push(area);
-    else if (credits) descLines.push(credits + " credits");
+    else if (credits) descLines.push(credits + (Number(credits) === 1 ? " credit" : " credits"));
     descLines.push("");
     descLines.push("📝 QUIZ" + (quizNum ? " #" + quizNum : ""));
     if (quizMarks) descLines.push(marksUploadedLine_(quizMarks));
@@ -10519,9 +10534,9 @@ function appendExamEvents_(prepared, selectedCodes, reminderMinutes) {
       (examEval ? " (" + examEval.weight + "%)" : "");
 
     var descLines = [];
-    if (area && credits) descLines.push(area + " · " + credits + " credits");
+    if (area && credits) descLines.push(area + " · " + credits + (Number(credits) === 1 ? " credit" : " credits"));
     else if (area) descLines.push(area);
-    else if (credits) descLines.push(credits + " credits");
+    else if (credits) descLines.push(credits + (Number(credits) === 1 ? " credit" : " credits"));
     descLines.push("");
     descLines.push("📕 " + examLabel.toUpperCase() + " EXAM");
     if (examMarks) descLines.push(marksUploadedLine_(examMarks));

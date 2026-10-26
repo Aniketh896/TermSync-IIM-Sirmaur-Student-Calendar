@@ -47,7 +47,7 @@ whole batch within 30 minutes. Hence:
    npm test
    ```
 
-   It must end with **"All 3 test files passed."** Any FAIL means don't paste.
+   It must end with **"All … test files passed."** Any FAIL means don't paste.
    (Tests run against `tests/fixtures/test.config.gs` — an invented batch — never
    your real settings.)
 3. **Bump `BUILD_ID_`** near the top of `code.gs` — today's date plus a letter, e.g.

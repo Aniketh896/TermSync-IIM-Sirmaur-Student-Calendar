@@ -20,6 +20,13 @@ programmer. Everything below is for changing the code.
 | `tests/` | `npm test` — node harnesses running the real `config.gs` + `code.gs` in a vm against an in-memory Google (`harness.js`), plus one Puppeteer page test. Fixtures in `tests/fixtures/` are invented. |
 | `docs/` | Guides for maintainers. `HOW_IT_WORKS.md` → "Under the hood" is the architecture. |
 
+## Commands
+
+- `npm test` — every test; must pass before a change is done.
+- `npm run check -- <config.gs> [timetable.csv]` — validates a filled-in `config.gs`
+  (syntax, settings, and with a CSV of the office timetable a full offline fetch +
+  every-student pre-flight). Ends with `RESULT: READY` or `RESULT: NOT READY`.
+
 ## Rules
 
 - **`npm test` must pass** before any change is called done. Add a check for every

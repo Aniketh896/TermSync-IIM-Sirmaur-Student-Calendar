@@ -6,7 +6,8 @@
   "author": "Aniketh Hotagi (https://www.linkedin.com/in/aniketh-hotagi/)",
   "license": "MIT",
   "scripts": {
-    "test": "node tests/run_all.js"
+    "test": "node tests/run_all.js",
+    "check": "node tests/check_config.js"
   },
   "devDependencies": {
     "puppeteer-core": "^23.0.0"

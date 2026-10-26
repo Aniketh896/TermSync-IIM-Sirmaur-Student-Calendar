@@ -30,8 +30,10 @@ TextEdit choose **Format → Make Plain Text** first). Every setting has a note 
 it saying what it is and where to find it. Fill in, in this order:
 
 1. **`THIS_TERM`** — term name, batch, calendar name, first and last day, and
-   `courseSelection` (`"section"` for first year). Leave the tags as they are for now
-   — Step 6 shows you whether they're right.
+   `courseSelection` (`"section"` for first year). For `termTags`, `ignoreTermTags`,
+   `yearTags` and `ignoreYearTags`, copy your term's row from
+   [the table in NEW_TERM.md](NEW_TERM.md#the-tags-for-each-term) — Step 6 shows you
+   whether they're right.
 2. **`MAINTAINER`** — your name, your roll number, your LinkedIn link.
 3. **`DATA_SOURCES` → `timetableSheet`** — open the office's timetable spreadsheet and
    copy the link from the address bar. Add the quiz and exam links if you have them.
@@ -43,6 +45,15 @@ it saying what it is and where to find it. Fill in, in this order:
 6. **`SAC_TEAM`** — the SAC members' rolls (optional, but they get the admin panel).
 
 Everything else is optional and can be added later. Save the file.
+
+Each block in `config.gs` is labelled **★ REQUIRED**, **◆ RECOMMENDED** or
+**○ OPTIONAL**. Change only the values — never the names on the left — and don't
+edit the other three files.
+
+> 💻 **Have Node.js on your computer?** In the downloaded folder run `npm install`,
+> then `npm run check -- app/config.gs` (add a CSV download of the office's timetable
+> after it for a full dry run). It must end with `RESULT: READY`. Optional — Step 6
+> checks the same things inside Google.
 
 > ⚠️ **Privacy:** this file now has your batchmates' names and roll numbers. Don't
 > post it anywhere public (including GitHub).

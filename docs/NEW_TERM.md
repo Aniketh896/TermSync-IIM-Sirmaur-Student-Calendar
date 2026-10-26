@@ -8,8 +8,9 @@ Use the **same** spreadsheet and Apps Script project as last term. Don't start a
 one: keeping the same project keeps the same link, the same permissions and every
 student's automatic sync.
 
-> **With an AI assistant:** give it this repository and say *"Help me move TermSync
-> to the next term — follow SETUP_WITH_AI.md, part B."*
+> **With an AI assistant:** send it *"Help me move TermSync to the next term. The
+> project is at https://github.com/Aniketh896/TermSync — read README.md and
+> SETUP_WITH_AI.md, then follow part B."*
 
 **When:** once the PGP office has put the new term's classes into its timetable
 sheet — usually a few days before classes start.

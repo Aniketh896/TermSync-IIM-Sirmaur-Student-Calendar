@@ -1,104 +1,221 @@
 # TermSync
 
-**Your class timetable, in your own Google Calendar — and kept up to date by itself.**
+**Your class timetable in your own Google Calendar — kept up to date by itself.**
 
-TermSync is a small web app for IIM Sirmaur students. A student opens one link,
-signs in with their institute account, and presses one button. From then on their
-classes, quizzes, mid-terms, end-terms and guest lectures sit in their Google
-Calendar, and whenever the PGP office changes a room, a time or a date, their
-calendar changes too — usually within half an hour, with nobody doing anything.
+Created by **[Aniketh Hotagi](https://www.linkedin.com/in/aniketh-hotagi/)** with the
+**[SAC, IIM Sirmaur](https://www.linkedin.com/company/saciimsirmaur)**. Each batch
+runs its own copy, looked after by one student from that batch — its **maintainer**.
+This repository is everything a maintainer needs.
 
-**Created by [Aniketh Hotagi](https://www.linkedin.com/in/aniketh-hotagi/)**
-(Batch 2025–27) with the SAC, IIM Sirmaur. Each batch has its own **maintainer** —
-one student who sets it up for their batch and looks after it. This repository is
-everything a maintainer needs.
+> 🤖 **AI assistants:** if someone asked you to help them set up or run TermSync,
+> read this README, then follow **[SETUP_WITH_AI.md](SETUP_WITH_AI.md)** step by step.
 
 <p align="center">
-  <img src="docs/images/student-view.png" alt="TermSync on a phone: the student's term, their courses, already selected from their section" width="360">
+  <img src="docs/images/student-view.png" alt="TermSync on a phone: the term, the student's name, and their courses already selected from their section" width="340">
 </p>
 
+**On this page:** [What it does](#what-it-does) · [Set it up](#set-it-up) ·
+[How it works](#how-it-works) · [What you change — and what you don't](#what-you-change--and-what-you-dont) ·
+[Changing a setting later](#changing-a-setting-later) · [Your two years](#your-two-years-with-termsync) ·
+[Files](#whats-in-this-folder)
+
 ---
 
-## Is this for you?
+## What it does
 
-You're in the right place if you are a student at IIM Sirmaur and you want to run
-TermSync for **your** batch — for example a first-year batch setting it up for
-Term 1, 2 or 3, and then carrying on through the second year.
+A student opens one link, signs in with their institute account, and presses
+**Enable Auto-Sync**. That's all they ever do. From then on:
 
-**You do not need to know how to code.** Setting it up means filling in one file of
-settings (your term's dates, your batch's roster, a few links) and clicking through
-Google's screens. An AI assistant can do the filling-in for you by asking you
-questions — see below.
+- A calendar named, say, **"IIM Sirmaur – Term 2"** appears in their Google Calendar,
+  with every class of every course they take — the right section, room, instructor
+  and session number.
+- 📝 **Quizzes** (red), 📕 **mid-terms and end-terms** (blue) and 🎤 **guest lectures**
+  (grey) are added too, each with its weight in the final grade when known.
+- When the PGP office changes a room, a time or a date, their calendar changes too —
+  usually within 30 minutes, at most about an hour. Nobody has to do anything.
+- On the page: their subject reps, course outlines, grading schemes, the latest
+  timetable changes, and a **PDF** of their whole term.
 
-What you need:
+First-year students don't even pick their courses: TermSync fills them in from
+their section. Second-years' electives come from the institute's allotment list.
+
+---
+
+## Set it up
+
+**You don't need to know how to code.** You fill in one file of settings and click
+through some Google screens. About 45 minutes, on a laptop.
+
+You'll need:
 
 - [ ] Your **@iimsirmaur.ac.in** Google account.
-- [ ] **View access to the PGP office's timetable spreadsheet** (the one with a row
+- [ ] **View access to the PGP office's timetable spreadsheet** (the one with one row
       per class). Ask the office to share it with your account as *Viewer*.
-- [ ] Your batch's **roll-number and section list** (a spreadsheet the institute
-      circulates).
-- [ ] Your term's **start and end dates** (from the academic calendar).
-- [ ] About **45 minutes**, on a laptop.
-- [ ] Optional: the published links to the **quiz schedule** and **mid-term / end-term
-      schedule** tabs (these add quizzes and exams to calendars).
+- [ ] Your batch's **roll number and section list**.
+- [ ] Your term's **dates** (from the academic calendar).
+- [ ] Recommended: the published links to the **quiz** and **exam schedule** tabs
+      (ask the previous maintainer or the SAC).
+
+### ⭐ Way 1 — with an AI assistant (recommended)
+
+Works with ChatGPT, Claude, Gemini and similar. Open a new chat and send:
+
+```text
+Help me set up TermSync for my batch. I'm not a programmer.
+The project is here: https://github.com/Aniketh896/TermSync
+Start by reading its README.md and SETUP_WITH_AI.md, explain to me how it works,
+then follow SETUP_WITH_AI.md exactly: ask me one question at a time, check
+everything, and walk me through every click.
+```
+
+If your assistant can't open GitHub links, click **Code → Download ZIP** on this page,
+unzip it, and attach the folder (or the ZIP) to the chat instead.
+
+> **Privacy:** your settings include your batchmates' names and roll numbers. If you'd
+> rather not give those to an AI service, tell it *"I'll paste the roster myself"*.
+
+### Way 2 — by yourself
+
+Follow **[docs/SETUP.md](docs/SETUP.md)** — every click in order, with what you should
+see after each one.
 
 ---
 
-## Set it up — pick one way
+## How it works
 
-### ⭐ Way 1: let an AI assistant walk you through it (recommended)
+TermSync is a Google Apps Script — a small program that lives inside a Google Sheet
+you own. There's no server, nothing to install and nothing to pay for.
 
-Works with ChatGPT, Claude, Gemini or any similar assistant.
+### Two automatic timers
 
-1. On this page, click the green **Code** button → **Download ZIP**. Unzip it.
-2. Open your AI assistant and **attach the whole unzipped folder** (or the ZIP file,
-   or paste this repository's link if your assistant can read GitHub links).
-3. Copy this message and send it:
+Everything happens on two timers. Both run every **30 minutes**, all day, by
+themselves.
 
-   ```text
-   I want to set up TermSync for my batch. I am not a programmer.
-   Please read SETUP_WITH_AI.md in the files I attached and follow it exactly:
-   ask me one question at a time, then give me my finished config.gs and walk me
-   through every click of the setup.
-   ```
+| | ① The institute fetch | ② Each student's sync |
+|---|---|---|
+| **Runs as** | You, the maintainer (the spreadsheet's owner) | Each student, in their own account |
+| **Started by** | Itself, the first time you run the fetch during setup | The student pressing **Enable Auto-Sync** |
+| **Reads** | The office's timetable sheet and the published quiz / exam tabs | TermSync's spreadsheet |
+| **Writes** | TermSync's spreadsheet | That student's TermSync calendar — nothing else |
+| **When nothing changed** | Writes nothing | Stops at once, without touching the calendar |
 
-4. Answer its questions. At the end you'll have your own working TermSync link.
+**An example.** At 10:05 the office moves Finance section B to another room.
+- By about **10:30**, the next fetch reads the office's sheet, spots the change,
+  updates the spreadsheet and logs it under 🛠️ Changes.
+- By about **11:00**, each Finance-B student's own sync sees the timetable changed
+  and moves that one event in their calendar. Nothing else in it is touched.
 
-> **About privacy.** Your roster (names and roll numbers) ends up in `config.gs`. If
-> you'd rather not give your batchmates' names to an AI service, tell the assistant
-> "I will paste the roster myself" — it will leave that part for you to paste
-> straight into Apps Script.
+### What happens on each run
 
-### Way 2: do it yourself, step by step
+**① The institute fetch** (`fetchAndCleanAdminData`):
+1. Reads the **office's timetable sheet** and keeps only your batch's rows (the
+   *Year/Batch* column) for this term's dates.
+2. Reads the **quiz and exam tabs** and keeps only this term's rows (the
+   *Batch / Term* column).
+3. Compares everything with what it stored last time. If anything changed, it saves
+   the new data and bumps a "revision" number. If nothing changed, it stops there.
+4. Records every change (room, time, date, instructor, a class added or removed) in
+   the change log.
 
-Follow **[docs/SETUP.md](docs/SETUP.md)** — every click, in order, with what you
-should see after each step.
+**② Each student's sync** (`backgroundSync`):
+1. Checks the revision number. Same as last time → done (most runs end here).
+2. Otherwise works out exactly which of that student's events should exist — their
+   classes, quizzes, exams and guest lectures — compares them with their calendar,
+   and adds, removes or updates only the differences.
+3. Notes the revision it reached, and the changes, which the student sees on the page.
+
+**Sync now** on the page runs ② immediately and also puts back any TermSync event the
+student deleted by mistake. **Refresh from institute now** (spreadsheet menu) runs ①
+immediately.
+
+### Where the data comes from
+
+| Source | Setting in `config.gs` | Needed? | Gives students |
+|---|---|---|---|
+| The PGP office's timetable spreadsheet (view access) | `DATA_SOURCES.timetableSheet` | **Required** | Classes; guest lectures and feedback sessions marked on them |
+| Quiz schedule tab (published to the web) | `quizSchedule` | Recommended | 📝 Quizzes |
+| Mid-term / end-term schedule tabs (published) | `midTermSchedule`, `endTermSchedule` | Recommended | 📕 Exams |
+| Elective allotment "Summary" tab (published) | `electivesSummary` | Second year | Electives filled in for each student |
+| Academic calendar tab (published) | `academicCalendar` | Optional | Exam weeks and term break in the PDF |
+| Course catalogue, OLT marks record (published) | `courseCatalogue`, `marksStatus` | Optional | A course-list cross-check; ✅ when marks are on OLT |
+| Your batch's roster | `STUDENTS` | **Required** | Names, and sections for first-year courses |
+| Courses, subject reps, outlines, grading | `COURSES`, `SUBJECT_REPS`, `COURSE_OUTLINES`, `COURSE_EVALUATION` | Courses required; rest optional | Course names; the reps, outlines and evaluation pop-ups |
+
+"Published to the web" means whoever owns that sheet chose *File → Share → Publish
+to web* for that tab — the link then contains `/d/e/2PACX-…`.
+
+### What gets filled in
+
+**TermSync's spreadsheet** (you never edit these tabs — the fetch rewrites them):
+
+| Tab | Holds |
+|---|---|
+| `MasterData` | This term's classes for your batch. Cells K1/K2 note anything the last fetch couldn't read |
+| `QuizData`, `ExamData`, `EndTermData` | This term's quizzes, mid-terms, end-terms |
+| `GuestData`, `FeedbackData` | Guest lectures, and the sessions where feedback is collected |
+| `ChangeLog` | Every change the office made, with the time it was noticed |
+| `Usage`, `Reports` *(hidden)* | Who uses TermSync, and "wrong entry" reports from students |
+
+**Each student's calendar:**
+
+| Event | Title looks like | Colour |
+|---|---|---|
+| Class | `FIN (A): Finance Basics` | One colour per course |
+| Quiz | `📝 ECO Quiz 1 — Economics for Managers (part of 20%)` | Red |
+| Exam | `📕 STAT Mid-Term Exam — Statistics (40%)` | Blue |
+| Guest lecture | `🎤 LEAD Guest Lecture — Leadership Lecture Series` | Grey |
+
+Each event's location is the room (`IIM Sirmaur | LH-1`); its description has the
+instructor, session, section, exam instructions, and — on the class where it happens —
+the course-feedback link. Students can add a reminder before every event (5 min to
+1 hour).
+
+### When something goes wrong
+
+- A sheet can't be read → **nothing is deleted**; everyone keeps what they had until
+  it can be read again.
+- The timetable suddenly loses lots of classes (the office mid-edit) → the change
+  waits one fetch to be sure.
+- The dates look wrong (most rows' dates disagree with their *Day* column) → the
+  whole read is refused.
+- Google slows a student's sync down → it finishes on the next run. Students see
+  "still finishing", never an error.
+
+### Privacy and permissions
+
+- The web app runs **as the student using it**, so it writes to their calendar with
+  their own permission. Nobody's password is stored; nobody else's calendar is touched.
+- Students need **view** access to TermSync's spreadsheet (their sync reads it as
+  them). Hidden tabs are hidden, not secret — keep nothing else sensitive there.
+
+More: everything in the admin menu, and the code's design, in
+**[docs/HOW_IT_WORKS.md](docs/HOW_IT_WORKS.md)**.
 
 ---
 
-## How it works, in one picture
+## What you change — and what you don't
 
-```
-  PGP office's timetable sheet  ─┐
-  + quiz & exam schedule tabs   ─┤   every 30 minutes, TermSync (running as YOU,
-                                 ├─► the maintainer) copies them into its own
-                                 │   spreadsheet — and notices what changed
-                                 ▼
-               TermSync's spreadsheet
-                                 │   every 30 minutes, EACH student's own copy of
-                                 ├─► TermSync updates THEIR calendar — but only if
-                                 ▼   something actually changed
-        "IIM Sirmaur – Term 2" calendar in every student's Google account
-```
+| | What | When |
+|---|---|---|
+| ★ **You must fill in** | In `app/config.gs`: `THIS_TERM`, `MAINTAINER`, `DATA_SOURCES.timetableSheet`, `COURSES`, `STUDENTS` | First setup, and the term-specific ones every term |
+| ★ **You must fill in, every new term** | `PREVIOUS_TERM` (last term's details), a new `THIS_TERM`, the new `COURSES` | See [docs/NEW_TERM.md](docs/NEW_TERM.md) |
+| ◆ **You should fill in** | The quiz / exam links, `SAC_TEAM` | When you have them |
+| ○ **You may fill in** | Subject reps, course outlines, grading schemes, other links, test mode, sit-ins | Any time |
+| ✓ **Already filled in** | `INSTITUTE` (domain, OLT and SAC links) | Leave it |
+| ✋ **Never change** | `app/code.gs`, `app/Index.html`, `app/appsscript.json`; the *names* of settings in `config.gs` (only their values); the web-app setting *Execute as: User accessing*; the tabs of TermSync's spreadsheet | — |
 
-- There is **no server** and nothing to pay for. TermSync is a Google Apps Script
-  attached to a Google Sheet you own.
-- Each student's calendar is changed **by their own account**, with their own
-  permission. Nobody's password or calendar is shared with anyone.
-- If the office's sheet ever can't be read, nothing is deleted: everyone keeps what
-  they had until it can be read again.
+Every setting in `config.gs` is labelled ★ / ◆ / ○ and has a note saying what it is
+and where to find it. To change *how TermSync works* (not just your settings), see
+[docs/CHANGING_THE_CODE.md](docs/CHANGING_THE_CODE.md).
 
-More detail, including everything in the admin menu: **[docs/HOW_IT_WORKS.md](docs/HOW_IT_WORKS.md)**.
+---
+
+## Changing a setting later
+
+1. Spreadsheet → **Extensions → Apps Script** → click **`config.gs`** → make the change.
+2. **💾 Save**, then **Deploy → Manage deployments → ✏️ → Version: *New version* →
+   Deploy**. (Save updates the timers at once; Deploy updates the page.)
+3. Spreadsheet → **📊 Tool Stats → ✓ Check settings**. Fix anything marked ✖.
 
 ---
 
@@ -106,38 +223,42 @@ More detail, including everything in the admin menu: **[docs/HOW_IT_WORKS.md](do
 
 | When | What you do | Guide |
 |---|---|---|
-| First time (any term) | Set it up once | [SETUP.md](docs/SETUP.md) |
-| Every new term — Term 1 → 2 → 3, and then 4 → 5 → 6 | Change `config.gs`, test it on yourself, move everyone over. Nobody in your batch has to do anything. | [NEW_TERM.md](docs/NEW_TERM.md) |
-| First year → second year (Term 3 → 4) | Same as a new term, plus switching from "section" courses to electives | [NEW_TERM.md](docs/NEW_TERM.md#first-year--second-year) |
-| Before you graduate | Help your junior set up their own copy for their batch | [PASSING_IT_ON.md](docs/PASSING_IT_ON.md) |
-| Something looks wrong | Run **📊 Tool Stats → ✓ Check settings** first | [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) |
-| You want to change how it works | Use an AI coding assistant; run the tests | [CHANGING_THE_CODE.md](docs/CHANGING_THE_CODE.md) |
+| First time | Set it up once | [docs/SETUP.md](docs/SETUP.md) |
+| Each new term (1 → 2 → 3, then 4 → 5 → 6) | Update `config.gs`, test on yourself, move everyone over. Your batch does nothing. | [docs/NEW_TERM.md](docs/NEW_TERM.md) |
+| First year → second year | Same as a new term, plus switching to electives | [docs/NEW_TERM.md](docs/NEW_TERM.md#first-year--second-year) |
+| Before you graduate | Help a junior set up their own copy | [docs/PASSING_IT_ON.md](docs/PASSING_IT_ON.md) |
+| Something looks wrong | Run **✓ Check settings** first | [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) |
 
 ---
 
 ## What's in this folder
 
-| File | What it is | Do you edit it? |
+| File | What it is | Edit it? |
 |---|---|---|
-| `app/config.gs` | **Your settings** — term, dates, roster, links. Every setting is explained inside. | **Yes — only this one** |
-| `app/code.gs` | The app itself (the server side) | No |
+| `app/config.gs` | **Your settings** | **Yes — only this one** |
+| `app/code.gs` | The app (runs on Google's side) | No |
 | `app/Index.html` | The page students see | No |
-| `app/appsscript.json` | The permissions the app asks for | No |
-| `SETUP_WITH_AI.md` | Instructions for an AI assistant helping you | No |
-| `docs/` | The guides linked above | — |
-| `tests/` | Automatic checks, for anyone changing the code (`npm test`) | Only if you change the code |
+| `app/appsscript.json` | The permissions it asks for | No |
+| `SETUP_WITH_AI.md` | The script an AI assistant follows to help you | No |
+| `docs/` | The guides | — |
+| `tests/` | Automatic checks (`npm test`), and `npm run check` for a filled-in `config.gs` | Only if you change the code |
 
-When a newer version of TermSync comes out, you replace `code.gs` and `Index.html`
-and **keep your `config.gs`**.
+When a newer version comes out, replace `code.gs` and `Index.html`, and keep your
+`config.gs`.
+
+**For anyone on a computer with [Node.js](https://nodejs.org):** `npm install`, then
+`npm test` checks the app, and `npm run check -- my-config.gs timetable.csv` checks
+a filled-in `config.gs` against a downloaded copy of the office's timetable before
+you paste it anywhere.
 
 ---
 
 ## Credits and licence
 
-TermSync was created by **[Aniketh Hotagi](https://www.linkedin.com/in/aniketh-hotagi/)**
-and built with the **[SAC, IIM Sirmaur](https://www.linkedin.com/company/saciimsirmaur)**.
-The app credits the SAC, your batch's maintainer and its creator in its footer
-and PDFs — please keep those credits when you run or share it.
+Created by **[Aniketh Hotagi](https://www.linkedin.com/in/aniketh-hotagi/)** with the
+**[SAC, IIM Sirmaur](https://www.linkedin.com/company/saciimsirmaur)**. The app's
+footer and PDFs credit the SAC, your batch's maintainer and its creator — please keep
+those credits.
 
-Released under the [MIT licence](LICENSE). TermSync is an unofficial, student-built
-tool: the official timetable from the institute is always the source of truth.
+[MIT licence](LICENSE). TermSync is an unofficial, student-built tool: the
+institute's official timetable is always the final word.

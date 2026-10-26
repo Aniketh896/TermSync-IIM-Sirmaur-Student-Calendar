@@ -22,6 +22,24 @@
 // ║  anything here is wrong or missing.                                          ║
 // ╚══════════════════════════════════════════════════════════════════════════════╝
 //
+// What you fill in
+// ────────────────
+//   ★ REQUIRED     The app can't work without it.
+//   ◆ RECOMMENDED  Works without it, but students miss out (quizzes, exams, SAC panel).
+//   ○ OPTIONAL     Nice to have. Leave it as it is and that feature stays off.
+//   ✓ ALREADY FILLED IN  Correct for IIM Sirmaur — leave it as it is.
+//
+//   The minimum for a working first install: THIS_TERM, MAINTAINER,
+//   DATA_SOURCES.timetableSheet, COURSES and STUDENTS.
+//
+// What you never change
+// ─────────────────────
+//   • The NAMES on the left of each setting (THIS_TERM, firstDay, …) — only the
+//     values after the colon or equals sign.
+//   • The other files: code.gs, Index.html, appsscript.json.
+//   • THIS_TERM.calendarName in the middle of a term (students would get a second,
+//     empty calendar). Change it only when you move to a new term.
+
 // How to read this file
 // ─────────────────────
 // • Lines starting with // are notes for you. The app ignores them.
@@ -33,7 +51,7 @@
 
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 1 · THIS TERM
+// 1 · THIS TERM                                         ★ REQUIRED — every term
 // ═══════════════════════════════════════════════════════════════════════════════
 var THIS_TERM = {
 
@@ -94,7 +112,8 @@ var THIS_TERM = {
 
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 2 · LAST TERM  (only used when you move the batch from one term to the next)
+// 2 · LAST TERM                        ★ REQUIRED from your second term onwards
+//     (blank on a first install — filled in when you move to the next term)
 // ═══════════════════════════════════════════════════════════════════════════════
 // When a new term starts, copy the OLD values of THIS_TERM.name, calendarName,
 // firstDay and lastDay here BEFORE you change THIS_TERM. The app then crosses out
@@ -110,7 +129,7 @@ var PREVIOUS_TERM = {
 
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 3 · YOUR INSTITUTE
+// 3 · YOUR INSTITUTE                         ✓ ALREADY FILLED IN — leave as it is
 // ═══════════════════════════════════════════════════════════════════════════════
 var INSTITUTE = {
   name: "IIM Sirmaur",
@@ -127,7 +146,7 @@ var INSTITUTE = {
 
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 4 · YOU — the person who runs TermSync for this batch
+// 4 · YOU — the person who runs TermSync for this batch          ★ REQUIRED
 // ═══════════════════════════════════════════════════════════════════════════════
 // Your name and LinkedIn appear in the footer ("SAC × <your name>"). Your roll gets
 // the ✦ Maintainer badge, the "Force fetch now" button and the build warnings.
@@ -141,6 +160,7 @@ var MAINTAINER = {
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 5 · WHERE THE INSTITUTE'S DATA COMES FROM
+//     ★ REQUIRED: timetableSheet  ·  ◆ RECOMMENDED: quiz / exam links  ·  rest optional
 // ═══════════════════════════════════════════════════════════════════════════════
 // Paste links exactly as you get them. Anything left blank simply switches that
 // feature off — only the timetable is required.
@@ -181,7 +201,7 @@ var DATA_SOURCES = {
 
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 6 · COURSES THIS TERM
+// 6 · COURSES THIS TERM                                   ★ REQUIRED — every term
 // ═══════════════════════════════════════════════════════════════════════════════
 // One line per course. The CODE (left) must be written exactly as it appears in the
 // "Code" column of the timetable sheet — a course missing here is left out of
@@ -202,7 +222,7 @@ var COURSES = {
 
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 7 · STUDENTS IN YOUR BATCH
+// 7 · STUDENTS IN YOUR BATCH                       ★ REQUIRED — once per batch
 // ═══════════════════════════════════════════════════════════════════════════════
 // One student per line:   ROLL NUMBER, FULL NAME, SECTION
 // Paste straight from the institute's roll-number / section allotment sheet:
@@ -216,7 +236,7 @@ var STUDENTS = `
 
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 8 · THE SAC TEAM
+// 8 · THE SAC TEAM                                              ◆ RECOMMENDED
 // ═══════════════════════════════════════════════════════════════════════════════
 // These people get a badge in the app and can open the 🎛️ Admin panel (usage, the
 // change log, wrong-entry reports, the student directory). One per line:
@@ -232,7 +252,7 @@ var SAC_TEAM = `
 
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 9 · SUBJECT REPRESENTATIVES  (optional)
+// 9 · SUBJECT REPRESENTATIVES                         ○ OPTIONAL — every term
 // ═══════════════════════════════════════════════════════════════════════════════
 // One per line:   COURSE CODE, SECTION, NAME, ROLL
 // SECTION is the letter for a course taught in several sections ("A"), or - when
@@ -244,7 +264,7 @@ var SUBJECT_REPS = `
 
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 10 · COURSE OUTLINES  (optional)
+// 10 · COURSE OUTLINES                                ○ OPTIONAL — every term
 // ═══════════════════════════════════════════════════════════════════════════════
 // The "📄 Course outlines" button. folder = link to the shared Drive folder; files =
 // one entry per course with the link to its outline (fac = instructor, or "").
@@ -257,7 +277,7 @@ var COURSE_OUTLINES = {
 
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 11 · HOW EACH COURSE IS GRADED  (optional)
+// 11 · HOW EACH COURSE IS GRADED                      ○ OPTIONAL — every term
 // ═══════════════════════════════════════════════════════════════════════════════
 // Copied from each course outline's evaluation table. Shown in the "📊 Evaluation"
 // popup, and used to tag quizzes and exams with their weight. Each course must add
@@ -274,7 +294,7 @@ var COURSE_EVALUATION = {
 
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 12 · TEST MODE
+// 12 · TEST MODE                 ○ use when testing — must be [] when you go live
 // ═══════════════════════════════════════════════════════════════════════════════
 // While this list has rolls in it, TermSync runs ONLY for them — everyone else's
 // calendar is left completely alone. Put your own roll (and one friend's) here
@@ -286,7 +306,8 @@ var TEST_ONLY_FOR = [];
 
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 13 · SIT-IN STUDENTS  (rare — leave empty unless arranged with an instructor)
+// 13 · SIT-IN STUDENTS              ○ RARE — leave empty unless arranged with an
+//      instructor; empty it every term
 // ═══════════════════════════════════════════════════════════════════════════════
 // A student attending a course's classes without taking its quizzes or exams.
 //   "ROLL": { classesOnly: ["CODE"], autoSelect: true, allowOverlaps: true }
