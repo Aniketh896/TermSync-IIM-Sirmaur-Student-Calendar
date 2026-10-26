@@ -1,0 +1,148 @@
+Date,Day,StartTime,EndTime,Timings (24 hrs format),Year/Batch,Code,Grp,Faculty,Session#,Classroom,FT/VF,Course-Section-Faculty,CR Block
+28-Sep-2026,Monday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,ECO,A,Prof. Example ECO,1,LH-1,FT,ECO A 1 Prof. Example ECO LH-1,CR-1 Block
+5-Oct-2026,Monday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,ECO,A,Prof. Example ECO,2,LH-1,FT,ECO A 2 Prof. Example ECO LH-1,CR-1 Block
+12-Oct-2026,Monday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,ECO,A,Prof. Example ECO,3,LH-1,FT,ECO A 3 Prof. Example ECO LH-1,CR-1 Block
+19-Oct-2026,Monday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,ECO,A,Prof. Example ECO,4,LH-1,FT,ECO A 4 Prof. Example ECO LH-1,CR-1 Block
+26-Oct-2026,Monday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,ECO,A,Prof. Example ECO,5,LH-1,FT,ECO A 5 Prof. Example ECO LH-1,CR-1 Block
+2-Nov-2026,Monday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,ECO,A,Prof. Example ECO,6,LH-1,FT,ECO A 6 Prof. Example ECO LH-1,CR-1 Block
+28-Sep-2026,Monday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,ECO,B,Prof. Example ECO,1,LH-2,FT,ECO B 1 Prof. Example ECO LH-2,CR-1 Block
+5-Oct-2026,Monday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,ECO,B,Prof. Example ECO,2,LH-2,FT,ECO B 2 Prof. Example ECO LH-2,CR-1 Block
+12-Oct-2026,Monday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,ECO,B,Prof. Example ECO,3,LH-2,FT,ECO B 3 Prof. Example ECO LH-2,CR-1 Block
+19-Oct-2026,Monday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,ECO,B,Prof. Example ECO,4,LH-2,FT,ECO B 4 Prof. Example ECO LH-2,CR-1 Block
+26-Oct-2026,Monday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,ECO,B,Prof. Example ECO,5,LH-2,FT,ECO B 5 Prof. Example ECO LH-2,CR-1 Block
+2-Nov-2026,Monday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,ECO,B,Prof. Example ECO,6,LH-2,FT,ECO B 6 Prof. Example ECO LH-2,CR-1 Block
+28-Sep-2026,Monday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,ECO,C,Prof. Example ECO,1,LH-3,FT,ECO C 1 Prof. Example ECO LH-3,CR-1 Block
+5-Oct-2026,Monday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,ECO,C,Prof. Example ECO,2,LH-3,FT,ECO C 2 Prof. Example ECO LH-3,CR-1 Block
+12-Oct-2026,Monday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,ECO,C,Prof. Example ECO,3,LH-3,FT,ECO C 3 Prof. Example ECO LH-3,CR-1 Block
+19-Oct-2026,Monday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,ECO,C,Prof. Example ECO,4,LH-3,FT,ECO C 4 Prof. Example ECO LH-3,CR-1 Block
+26-Oct-2026,Monday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,ECO,C,Prof. Example ECO,5,LH-3,FT,ECO C 5 Prof. Example ECO LH-3,CR-1 Block
+2-Nov-2026,Monday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,ECO,C,Prof. Example ECO,6,LH-3,FT,ECO C 6 Prof. Example ECO LH-3,CR-1 Block
+28-Sep-2026,Monday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,ECO,D,Prof. Example ECO,1,LH-4,FT,ECO D 1 Prof. Example ECO LH-4,CR-1 Block
+5-Oct-2026,Monday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,ECO,D,Prof. Example ECO,2,LH-4,FT,ECO D 2 Prof. Example ECO LH-4,CR-1 Block
+12-Oct-2026,Monday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,ECO,D,Prof. Example ECO,3,LH-4,FT,ECO D 3 Prof. Example ECO LH-4,CR-1 Block
+19-Oct-2026,Monday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,ECO,D,Prof. Example ECO,4,LH-4,FT,ECO D 4 Prof. Example ECO LH-4,CR-1 Block
+26-Oct-2026,Monday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,ECO,D,Prof. Example ECO,5,LH-4,FT,ECO D 5 Prof. Example ECO LH-4,CR-1 Block
+2-Nov-2026,Monday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,ECO,D,Prof. Example ECO,6,LH-4,FT,ECO D 6 Prof. Example ECO LH-4,CR-1 Block
+29-Sep-2026,Tuesday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,FIN,A,Prof. Example FIN,1,LH-1,FT,FIN A 1 Prof. Example FIN LH-1,CR-1 Block
+6-Oct-2026,Tuesday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,FIN,A,Prof. Example FIN,2,LH-1,FT,FIN A 2 Prof. Example FIN LH-1,CR-1 Block
+13-Oct-2026,Tuesday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,FIN,A,Prof. Example FIN,3,LH-1,FT,FIN A 3 Prof. Example FIN LH-1 (Feedback),CR-1 Block
+20-Oct-2026,Tuesday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,FIN,A,Prof. Example FIN,4,LH-1,FT,FIN A 4 Prof. Example FIN LH-1,CR-1 Block
+27-Oct-2026,Tuesday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,FIN,A,Prof. Example FIN,5,LH-1,FT,FIN A 5 Prof. Example FIN LH-1,CR-1 Block
+3-Nov-2026,Tuesday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,FIN,A,Prof. Example FIN,6,LH-1,FT,FIN A 6 Prof. Example FIN LH-1,CR-1 Block
+29-Sep-2026,Tuesday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,FIN,B,Prof. Example FIN,1,LH-2,FT,FIN B 1 Prof. Example FIN LH-2,CR-1 Block
+6-Oct-2026,Tuesday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,FIN,B,Prof. Example FIN,2,LH-2,FT,FIN B 2 Prof. Example FIN LH-2,CR-1 Block
+13-Oct-2026,Tuesday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,FIN,B,Prof. Example FIN,3,LH-2,FT,FIN B 3 Prof. Example FIN LH-2,CR-1 Block
+20-Oct-2026,Tuesday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,FIN,B,Prof. Example FIN,4,LH-2,FT,FIN B 4 Prof. Example FIN LH-2,CR-1 Block
+27-Oct-2026,Tuesday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,FIN,B,Prof. Example FIN,5,LH-2,FT,FIN B 5 Prof. Example FIN LH-2,CR-1 Block
+3-Nov-2026,Tuesday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,FIN,B,Prof. Example FIN,6,LH-2,FT,FIN B 6 Prof. Example FIN LH-2,CR-1 Block
+29-Sep-2026,Tuesday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,FIN,C,Prof. Example FIN,1,LH-3,FT,FIN C 1 Prof. Example FIN LH-3,CR-1 Block
+6-Oct-2026,Tuesday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,FIN,C,Prof. Example FIN,2,LH-3,FT,FIN C 2 Prof. Example FIN LH-3,CR-1 Block
+13-Oct-2026,Tuesday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,FIN,C,Prof. Example FIN,3,LH-3,FT,FIN C 3 Prof. Example FIN LH-3,CR-1 Block
+20-Oct-2026,Tuesday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,FIN,C,Prof. Example FIN,4,LH-3,FT,FIN C 4 Prof. Example FIN LH-3,CR-1 Block
+27-Oct-2026,Tuesday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,FIN,C,Prof. Example FIN,5,LH-3,FT,FIN C 5 Prof. Example FIN LH-3,CR-1 Block
+3-Nov-2026,Tuesday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,FIN,C,Prof. Example FIN,6,LH-3,FT,FIN C 6 Prof. Example FIN LH-3,CR-1 Block
+29-Sep-2026,Tuesday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,FIN,D,Prof. Example FIN,1,LH-4,FT,FIN D 1 Prof. Example FIN LH-4,CR-1 Block
+6-Oct-2026,Tuesday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,FIN,D,Prof. Example FIN,2,LH-4,FT,FIN D 2 Prof. Example FIN LH-4,CR-1 Block
+13-Oct-2026,Tuesday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,FIN,D,Prof. Example FIN,3,LH-4,FT,FIN D 3 Prof. Example FIN LH-4,CR-1 Block
+20-Oct-2026,Tuesday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,FIN,D,Prof. Example FIN,4,LH-4,FT,FIN D 4 Prof. Example FIN LH-4,CR-1 Block
+27-Oct-2026,Tuesday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,FIN,D,Prof. Example FIN,5,LH-4,FT,FIN D 5 Prof. Example FIN LH-4,CR-1 Block
+3-Nov-2026,Tuesday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,FIN,D,Prof. Example FIN,6,LH-4,FT,FIN D 6 Prof. Example FIN LH-4,CR-1 Block
+30-Sep-2026,Wednesday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,MKT,A,Prof. Example MKT,1,LH-1,FT,MKT A 1 Prof. Example MKT LH-1,CR-1 Block
+7-Oct-2026,Wednesday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,MKT,A,Prof. Example MKT,2,LH-1,FT,MKT A 2 Prof. Example MKT LH-1,CR-1 Block
+14-Oct-2026,Wednesday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,MKT,A,Prof. Example MKT,3,LH-1,FT,MKT A 3 Prof. Example MKT LH-1,CR-1 Block
+21-Oct-2026,Wednesday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,MKT,A,Prof. Example MKT,4,LH-1,FT,MKT A 4 Prof. Example MKT LH-1,CR-1 Block
+28-Oct-2026,Wednesday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,MKT,A,Prof. Example MKT,5,LH-1,FT,MKT A 5 Prof. Example MKT LH-1,CR-1 Block
+4-Nov-2026,Wednesday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,MKT,A,Prof. Example MKT,6,LH-1,FT,MKT A 6 Prof. Example MKT LH-1,CR-1 Block
+30-Sep-2026,Wednesday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,MKT,B,Prof. Example MKT,1,LH-2,FT,MKT B 1 Prof. Example MKT LH-2,CR-1 Block
+7-Oct-2026,Wednesday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,MKT,B,Prof. Example MKT,2,LH-2,FT,MKT B 2 Prof. Example MKT LH-2,CR-1 Block
+14-Oct-2026,Wednesday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,MKT,B,Prof. Example MKT,3,LH-2,FT,MKT B 3 Prof. Example MKT LH-2,CR-1 Block
+21-Oct-2026,Wednesday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,MKT,B,Prof. Example MKT,4,LH-2,FT,MKT B 4 Prof. Example MKT LH-2,CR-1 Block
+28-Oct-2026,Wednesday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,MKT,B,Prof. Example MKT,5,LH-2,FT,MKT B 5 Prof. Example MKT LH-2,CR-1 Block
+4-Nov-2026,Wednesday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,MKT,B,Prof. Example MKT,6,LH-2,FT,MKT B 6 Prof. Example MKT LH-2,CR-1 Block
+30-Sep-2026,Wednesday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,MKT,C,Prof. Example MKT,1,LH-3,FT,MKT C 1 Prof. Example MKT LH-3,CR-1 Block
+7-Oct-2026,Wednesday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,MKT,C,Prof. Example MKT,2,LH-3,FT,MKT C 2 Prof. Example MKT LH-3,CR-1 Block
+14-Oct-2026,Wednesday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,MKT,C,Prof. Example MKT,3,LH-3,FT,MKT C 3 Prof. Example MKT LH-3,CR-1 Block
+21-Oct-2026,Wednesday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,MKT,C,Prof. Example MKT,4,LH-3,FT,MKT C 4 Prof. Example MKT LH-3,CR-1 Block
+28-Oct-2026,Wednesday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,MKT,C,Prof. Example MKT,5,LH-3,FT,MKT C 5 Prof. Example MKT LH-3,CR-1 Block
+4-Nov-2026,Wednesday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,MKT,C,Prof. Example MKT,6,LH-3,FT,MKT C 6 Prof. Example MKT LH-3,CR-1 Block
+30-Sep-2026,Wednesday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,MKT,D,Prof. Example MKT,1,LH-4,FT,MKT D 1 Prof. Example MKT LH-4,CR-1 Block
+7-Oct-2026,Wednesday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,MKT,D,Prof. Example MKT,2,LH-4,FT,MKT D 2 Prof. Example MKT LH-4,CR-1 Block
+14-Oct-2026,Wednesday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,MKT,D,Prof. Example MKT,3,LH-4,FT,MKT D 3 Prof. Example MKT LH-4,CR-1 Block
+21-Oct-2026,Wednesday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,MKT,D,Prof. Example MKT,4,LH-4,FT,MKT D 4 Prof. Example MKT LH-4,CR-1 Block
+28-Oct-2026,Wednesday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,MKT,D,Prof. Example MKT,5,LH-4,FT,MKT D 5 Prof. Example MKT LH-4,CR-1 Block
+4-Nov-2026,Wednesday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,MKT,D,Prof. Example MKT,6,LH-4,FT,MKT D 6 Prof. Example MKT LH-4,CR-1 Block
+1-Oct-2026,Thursday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,OPS,A,Prof. Example OPS,1,LH-1,FT,OPS A 1 Prof. Example OPS LH-1,CR-1 Block
+8-Oct-2026,Thursday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,OPS,A,Prof. Example OPS,2,LH-1,FT,OPS A 2 Prof. Example OPS LH-1,CR-1 Block
+15-Oct-2026,Thursday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,OPS,A,Prof. Example OPS,3,LH-1,FT,OPS A 3 Prof. Example OPS LH-1,CR-1 Block
+22-Oct-2026,Thursday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,OPS,A,Prof. Example OPS,4,LH-1,FT,OPS A 4 Prof. Example OPS LH-1,CR-1 Block
+29-Oct-2026,Thursday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,OPS,A,Prof. Example OPS,5,LH-1,FT,OPS A 5 Prof. Example OPS LH-1,CR-1 Block
+5-Nov-2026,Thursday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,OPS,A,Prof. Example OPS,6,LH-1,FT,OPS A 6 Prof. Example OPS LH-1,CR-1 Block
+1-Oct-2026,Thursday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,OPS,B,Prof. Example OPS,1,LH-2,FT,OPS B 1 Prof. Example OPS LH-2,CR-1 Block
+8-Oct-2026,Thursday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,OPS,B,Prof. Example OPS,2,LH-2,FT,OPS B 2 Prof. Example OPS LH-2,CR-1 Block
+15-Oct-2026,Thursday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,OPS,B,Prof. Example OPS,3,LH-2,FT,OPS B 3 Prof. Example OPS LH-2,CR-1 Block
+22-Oct-2026,Thursday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,OPS,B,Prof. Example OPS,4,LH-2,FT,OPS B 4 Prof. Example OPS LH-2,CR-1 Block
+29-Oct-2026,Thursday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,OPS,B,Prof. Example OPS,5,LH-2,FT,OPS B 5 Prof. Example OPS LH-2,CR-1 Block
+5-Nov-2026,Thursday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,OPS,B,Prof. Example OPS,6,LH-2,FT,OPS B 6 Prof. Example OPS LH-2,CR-1 Block
+1-Oct-2026,Thursday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,OPS,C,Prof. Example OPS,1,LH-3,FT,OPS C 1 Prof. Example OPS LH-3,CR-1 Block
+8-Oct-2026,Thursday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,OPS,C,Prof. Example OPS,2,LH-3,FT,OPS C 2 Prof. Example OPS LH-3,CR-1 Block
+15-Oct-2026,Thursday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,OPS,C,Prof. Example OPS,3,LH-3,FT,OPS C 3 Prof. Example OPS LH-3,CR-1 Block
+22-Oct-2026,Thursday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,OPS,C,Prof. Example OPS,4,LH-3,FT,OPS C 4 Prof. Example OPS LH-3,CR-1 Block
+29-Oct-2026,Thursday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,OPS,C,Prof. Example OPS,5,LH-3,FT,OPS C 5 Prof. Example OPS LH-3,CR-1 Block
+5-Nov-2026,Thursday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,OPS,C,Prof. Example OPS,6,LH-3,FT,OPS C 6 Prof. Example OPS LH-3,CR-1 Block
+1-Oct-2026,Thursday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,OPS,D,Prof. Example OPS,1,LH-4,FT,OPS D 1 Prof. Example OPS LH-4,CR-1 Block
+8-Oct-2026,Thursday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,OPS,D,Prof. Example OPS,2,LH-4,FT,OPS D 2 Prof. Example OPS LH-4,CR-1 Block
+15-Oct-2026,Thursday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,OPS,D,Prof. Example OPS,3,LH-4,FT,OPS D 3 Prof. Example OPS LH-4,CR-1 Block
+22-Oct-2026,Thursday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,OPS,D,Prof. Example OPS,4,LH-4,FT,OPS D 4 Prof. Example OPS LH-4,CR-1 Block
+29-Oct-2026,Thursday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,OPS,D,Prof. Example OPS,5,LH-4,FT,OPS D 5 Prof. Example OPS LH-4,CR-1 Block
+5-Nov-2026,Thursday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,OPS,D,Prof. Example OPS,6,LH-4,FT,OPS D 6 Prof. Example OPS LH-4,CR-1 Block
+2-Oct-2026,Friday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,STAT,A,Prof. Example STAT,1,LH-1,FT,STAT A 1 Prof. Example STAT LH-1,CR-1 Block
+9-Oct-2026,Friday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,STAT,A,Prof. Example STAT,2,LH-1,FT,STAT A 2 Prof. Example STAT LH-1,CR-1 Block
+16-Oct-2026,Friday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,STAT,A,Prof. Example STAT,3,LH-1,FT,STAT A 3 Prof. Example STAT LH-1,CR-1 Block
+23-Oct-2026,Friday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,STAT,A,Prof. Example STAT,4,LH-1,FT,STAT A 4 Prof. Example STAT LH-1,CR-1 Block
+30-Oct-2026,Friday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,STAT,A,Prof. Example STAT,5,LH-1,FT,STAT A 5 Prof. Example STAT LH-1,CR-1 Block
+6-Nov-2026,Friday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,STAT,A,Prof. Example STAT,6,LH-1,FT,STAT A 6 Prof. Example STAT LH-1,CR-1 Block
+2-Oct-2026,Friday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,STAT,B,Prof. Example STAT,1,LH-2,FT,STAT B 1 Prof. Example STAT LH-2,CR-1 Block
+9-Oct-2026,Friday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,STAT,B,Prof. Example STAT,2,LH-2,FT,STAT B 2 Prof. Example STAT LH-2,CR-1 Block
+16-Oct-2026,Friday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,STAT,B,Prof. Example STAT,3,LH-2,FT,STAT B 3 Prof. Example STAT LH-2,CR-1 Block
+23-Oct-2026,Friday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,STAT,B,Prof. Example STAT,4,LH-2,FT,STAT B 4 Prof. Example STAT LH-2,CR-1 Block
+30-Oct-2026,Friday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,STAT,B,Prof. Example STAT,5,LH-2,FT,STAT B 5 Prof. Example STAT LH-2,CR-1 Block
+6-Nov-2026,Friday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,STAT,B,Prof. Example STAT,6,LH-2,FT,STAT B 6 Prof. Example STAT LH-2,CR-1 Block
+2-Oct-2026,Friday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,STAT,C,Prof. Example STAT,1,LH-3,FT,STAT C 1 Prof. Example STAT LH-3,CR-1 Block
+9-Oct-2026,Friday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,STAT,C,Prof. Example STAT,2,LH-3,FT,STAT C 2 Prof. Example STAT LH-3,CR-1 Block
+16-Oct-2026,Friday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,STAT,C,Prof. Example STAT,3,LH-3,FT,STAT C 3 Prof. Example STAT LH-3,CR-1 Block
+23-Oct-2026,Friday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,STAT,C,Prof. Example STAT,4,LH-3,FT,STAT C 4 Prof. Example STAT LH-3,CR-1 Block
+30-Oct-2026,Friday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,STAT,C,Prof. Example STAT,5,LH-3,FT,STAT C 5 Prof. Example STAT LH-3,CR-1 Block
+6-Nov-2026,Friday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,STAT,C,Prof. Example STAT,6,LH-3,FT,STAT C 6 Prof. Example STAT LH-3,CR-1 Block
+2-Oct-2026,Friday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,STAT,D,Prof. Example STAT,1,LH-4,FT,STAT D 1 Prof. Example STAT LH-4,CR-1 Block
+9-Oct-2026,Friday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,STAT,D,Prof. Example STAT,2,LH-4,FT,STAT D 2 Prof. Example STAT LH-4,CR-1 Block
+16-Oct-2026,Friday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,STAT,D,Prof. Example STAT,3,LH-4,FT,STAT D 3 Prof. Example STAT LH-4,CR-1 Block
+23-Oct-2026,Friday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,STAT,D,Prof. Example STAT,4,LH-4,FT,STAT D 4 Prof. Example STAT LH-4,CR-1 Block
+30-Oct-2026,Friday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,STAT,D,Prof. Example STAT,5,LH-4,FT,STAT D 5 Prof. Example STAT LH-4,CR-1 Block
+6-Nov-2026,Friday,3:45 PM,5:15 PM,15:45 - 17:15,Ist year,STAT,D,Prof. Example STAT,6,LH-4,FT,STAT D 6 Prof. Example STAT LH-4,CR-1 Block
+30-Sep-2026,Wednesday,5:30 PM,7:00 PM,17:30 - 19:00,Ist year,LEAD,,Prof. Example Lead,1,AUDI,FT,LEAD 1 Prof. Example Lead AUDI,CR-1 Block
+7-Oct-2026,Wednesday,5:30 PM,7:00 PM,17:30 - 19:00,Ist year,LEAD,,Prof. Example Lead,2,AUDI,FT,LEAD 2 Prof. Example Lead AUDI,CR-1 Block
+14-Oct-2026,Wednesday,5:30 PM,7:00 PM,17:30 - 19:00,Ist year,LEAD,,Prof. Example Lead,3,AUDI,FT,LEAD 3 Prof. Example Lead AUDI (Guest Lecture),CR-1 Block
+21-Oct-2026,Wednesday,5:30 PM,7:00 PM,17:30 - 19:00,Ist year,LEAD,,Prof. Example Lead,4,AUDI,FT,LEAD 4 Prof. Example Lead AUDI,CR-1 Block
+28-Oct-2026,Wednesday,5:30 PM,7:00 PM,17:30 - 19:00,Ist year,LEAD,,Prof. Example Lead,5,AUDI,FT,LEAD 5 Prof. Example Lead AUDI,CR-1 Block
+2-Oct-2026,Friday,5:30 PM,7:00 PM,17:30 - 19:00,Ist year,TOUR,,Prof. Example Tour,1,LH-5,FT,TOUR 1 Prof. Example Tour LH-5,CR-1 Block
+9-Oct-2026,Friday,5:30 PM,7:00 PM,17:30 - 19:00,Ist year,TOUR,,Prof. Example Tour,2,LH-5,FT,TOUR 2 Prof. Example Tour LH-5,CR-1 Block
+16-Oct-2026,Friday,5:30 PM,7:00 PM,17:30 - 19:00,Ist year,TOUR,,Prof. Example Tour,3,LH-5,FT,TOUR 3 Prof. Example Tour LH-5,CR-1 Block
+23-Oct-2026,Friday,5:30 PM,7:00 PM,17:30 - 19:00,Ist year,TOUR,,Prof. Example Tour,4,LH-5,FT,TOUR 4 Prof. Example Tour LH-5,CR-1 Block
+28-Sep-2026,Monday,9:00 AM,10:30 AM,09:00 - 10:30,2nd Year,ELEC0,,Prof. Senior,1,CR-1,FT,ELEC0 1 Prof. Senior CR-1,CR-1 Block
+29-Sep-2026,Tuesday,10:45 AM,12:15 PM,10:45 - 12:15,2nd Year,ELEC1,A,Prof. Senior,2,CR-2,FT,ELEC1 A 2 Prof. Senior CR-2,CR-1 Block
+30-Sep-2026,Wednesday,2:00 PM,3:30 PM,14:00 - 15:30,2nd Year,ELEC2,,Prof. Senior,3,CR-3,FT,ELEC2 3 Prof. Senior CR-3,CR-1 Block
+1-Oct-2026,Thursday,3:45 PM,5:15 PM,15:45 - 17:15,2nd Year,ELEC0,A,Prof. Senior,4,CR-1,FT,ELEC0 A 4 Prof. Senior CR-1,CR-1 Block
+2-Oct-2026,Friday,9:00 AM,10:30 AM,09:00 - 10:30,2nd Year,ELEC1,,Prof. Senior,5,CR-2,FT,ELEC1 5 Prof. Senior CR-2,CR-1 Block
+5-Oct-2026,Monday,10:45 AM,12:15 PM,10:45 - 12:15,2nd Year,ELEC2,A,Prof. Senior,6,CR-3,FT,ELEC2 A 6 Prof. Senior CR-3,CR-1 Block
+6-Oct-2026,Tuesday,2:00 PM,3:30 PM,14:00 - 15:30,2nd Year,ELEC0,,Prof. Senior,7,CR-1,FT,ELEC0 7 Prof. Senior CR-1,CR-1 Block
+7-Oct-2026,Wednesday,3:45 PM,5:15 PM,15:45 - 17:15,2nd Year,ELEC1,A,Prof. Senior,8,CR-2,FT,ELEC1 A 8 Prof. Senior CR-2,CR-1 Block
+8-Oct-2026,Thursday,9:00 AM,10:30 AM,09:00 - 10:30,2nd Year,ELEC2,,Prof. Senior,9,CR-3,FT,ELEC2 9 Prof. Senior CR-3,CR-1 Block
+9-Oct-2026,Friday,10:45 AM,12:15 PM,10:45 - 12:15,2nd Year,ELEC0,A,Prof. Senior,10,CR-1,FT,ELEC0 A 10 Prof. Senior CR-1,CR-1 Block
+12-Oct-2026,Monday,2:00 PM,3:30 PM,14:00 - 15:30,2nd Year,ELEC1,,Prof. Senior,11,CR-2,FT,ELEC1 11 Prof. Senior CR-2,CR-1 Block
+13-Oct-2026,Tuesday,3:45 PM,5:15 PM,15:45 - 17:15,2nd Year,ELEC2,A,Prof. Senior,12,CR-3,FT,ELEC2 A 12 Prof. Senior CR-3,CR-1 Block
+26-Oct-2026,Monday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,Quiz Slot,A,,,,FT,Quiz Slot A,CR-1 Block
+27-Oct-2026,Tuesday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,Quiz Slot,B,,,,FT,Quiz Slot B,CR-1 Block
+28-Oct-2026,Wednesday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,Quiz Slot,C,,,,FT,Quiz Slot C,CR-1 Block
+29-Oct-2026,Thursday,9:00 AM,10:30 AM,09:00 - 10:30,Ist year,Quiz Slot,D,,,,FT,Quiz Slot D,CR-1 Block
+2-Nov-2026,Monday,10:45 AM,12:15 PM,10:45 - 12:15,Ist year,PhD Class,A,Prof. Example PhD,1,LH-1,FT,PhD Class A 1 Prof. Example PhD LH-1,CR-1 Block
+3-Nov-2026,Tuesday,2:00 PM,3:30 PM,14:00 - 15:30,Ist year,,,,,,FT,,CR-1 Block

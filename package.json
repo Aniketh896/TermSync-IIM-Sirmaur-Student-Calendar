@@ -1,0 +1,14 @@
+{
+  "name": "termsync",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TermSync: puts each student's institute timetable into their own Google Calendar and keeps it updated. Google Apps Script web app. Created by Aniketh Hotagi.",
+  "author": "Aniketh Hotagi (https://www.linkedin.com/in/aniketh-hotagi/)",
+  "license": "MIT",
+  "scripts": {
+    "test": "node tests/run_all.js"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^23.0.0"
+  }
+}

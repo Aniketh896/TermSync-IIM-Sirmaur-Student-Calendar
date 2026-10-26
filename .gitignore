@@ -1,0 +1,9 @@
+node_modules/
+.DS_Store
+*.png
+!docs/images/*.png
+# Your filled-in settings: names and roll numbers of real students. Keep them out
+# of any public repository. (See docs/CHANGING_THE_CODE.md → "Keeping your copy".)
+my-config.gs
+*.private.gs
+.claude/settings.local.json
