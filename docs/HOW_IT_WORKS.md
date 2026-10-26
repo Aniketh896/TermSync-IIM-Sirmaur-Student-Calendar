@@ -143,6 +143,36 @@ A switched-off feature is hidden on the page **and** refused by the server
 
 ---
 
+## How TermSync reads the institute's sheets
+
+The sheets are typed by different people, term after term, for both years, so the
+same thing turns up written different ways. Every sheet goes through the same
+rules, so what works in one works in all of them:
+
+| What | How it's decided | Written any of these ways |
+|---|---|---|
+| **Your batch's rows** in the timetable (and guest-lecture / feedback tabs) | The *Year/Batch* column contains a year tag for your term (Terms 1–3: first year, 4–6: second year) | "Ist year", "1st Year", "First Year", "Year 1", "I Year" · "2nd Year", "II Year", "Second Year", "Year 2" |
+| **This term's rows** in the quiz / exam tabs | The *Batch / Term* column contains this term's tag and none of its neighbours' | "T-II", "Term-II", "TERM II", "T-2" … ([table](NEW_TERM.md#reference-the-standard-tags)) |
+| **Not another batch's** | A row that names a batch ("MBA 2025-27") other than yours is never kept, whatever its tags say. An academic year ("AY 2026-27") isn't a batch | "2026-28", "2026-2028", "26-28" |
+| **Which course** | Matched to `COURSES` ignoring case, spaces, hyphens and dots | "QAM-II", "QAM II", "qam-ii" |
+| **Which section** | A section cell is one section, several, or everyone | "A", "Sec A", "Section-A" · "A & B", "A, B", "A/B", "A+B", "A and B" (any letters your roster has) · "-", "All", "Both", "Common" |
+| **Who takes it** (Terms 1–3) | Every course the timetable runs for the student's section, plus every course run for the whole batch at once; `onlyFor` limits a course to programmes ("MBATM" matches MBATM rolls only, "MBA" MBA rolls only) | — |
+| **Exams per section** | If an exam tab has a *Section* column, each student gets only their section's sitting; otherwise the one sitting is everyone's | — |
+| **Times** | 12- or 24-hour | "2:00 PM", "2:00:00 PM", "14:00", "14.00", "1400 hrs", "2 p.m." |
+| **Dates** | Day first, month first or ISO; impossible dates (31 September) are refused, never rolled over | "28-Sep-2026", "28/09/26", "Mon, 28 Sep 2026", "Sep 28, 2026", "2026-09-28" |
+| **Academic calendar term** | Matched by number | "Term II", "Term-2", "TERM 2" |
+| **Roll numbers** in the elective tabs | Letters, then at least four digits, then an optional letter (repeat students) | "MBA26917", "MBATM26904", "PHD26902", "MBA25999R" |
+| **Room, instructor, session** | Their own columns in the office's sheet | — |
+
+Placeholders in the timetable ("Quiz Slot", "PhD Class") are never classes.
+✓ Check settings shows, for every sheet, which values it found and which it kept, so
+a new spelling shows up before it reaches anyone's calendar. If the institute writes
+something none of these rules catch, `THIS_TERM` can override the tags (see the
+advanced lines in `config.gs`); anything else is a code change
+([CHANGING_THE_CODE.md](CHANGING_THE_CODE.md)).
+
+---
+
 ## When things go wrong, TermSync keeps what it had
 
 - If a sheet can't be read, the previous data is kept and students' calendars don't
@@ -260,6 +290,18 @@ calendar by signature → create / delete / patch → record the revision.
 - **The feedback note is part of the fingerprint**, so it must depend only on the
   class (course, section, start, end) — never on today's date, or every class would
   be rewritten on every sync.
+
+## The reading rules in the code
+
+All in one place near the top of `code.gs`, used by every parser:
+`normalizeSection_` / `splitSectionCell_` (sections, joint sessions),
+`courseCodeKey_` / `canonicalCourseCode_` (course codes), `cleanTimeText_` (times),
+`termNumberOf_` (term labels), `namesAnotherBatch_` (batch guard, used by
+`isTermRow_` and `isOurYearRow_`). `parseQuizDate_` / `exactDate_` read every date,
+and `rowSectionApplies_` decides whether a quiz or exam row's section is the
+student's. Change a rule there and every sheet follows; add a check for it to
+`tests/settings_test.js` (unit) and `tests/first_year_test.js` (section 12 runs the
+whole pipeline on sheets written differently).
 
 ## Term numbers and switches
 

@@ -2,6 +2,21 @@
 
 All notable changes to TermSync. Versions match `BUILD_ID_` in `app/code.gs`.
 
+## 2026-10-27a — reading the sheets, whatever the term or batch
+
+- One set of reading rules for every sheet: sections ("Sec A", joint sessions
+  "A & B" / "A, B" / "A and B" for any section letter on the roster), course codes
+  matched ignoring case and punctuation, times ("2:00:00 PM", "14.00"), dates
+  (weekday or month first), academic-calendar terms by number.
+- Joint sessions in the timetable and in guest-lecture / feedback tabs become one
+  class per section.
+- Exams can be per section: an exam tab with a Section column gives each student only
+  their own sitting (calendar, PDF and the picker's preview).
+- Batch guard: a row naming another batch's years is never kept.
+- More spellings of the year ("1st Year", "First Year", "Year 1", "II Year", …).
+- Roll numbers of any programme are read from the elective tabs; `onlyFor` matches a
+  whole programme prefix ("MBA" no longer also matches MBA-TM rolls).
+
 ## 2026-10-26a — first public release
 
 TermSync, created by Aniketh Hotagi for Batch 2025–27, released for any IIM Sirmaur

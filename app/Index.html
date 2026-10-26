@@ -6087,7 +6087,7 @@
         function getSelectionSummary(selsOverride) {
             var sels = selsOverride || getCheckedSelections();
             var credits = 0, classes = 0, quizzes = 0, exams = 0;
-            var examCountedCodes = {};
+            var examCountedSlots = {};
             sels.forEach(function (val) {
                 var code = extractCode(val);
                 var course = window.appCourseData[code];
@@ -6114,10 +6114,17 @@
                     seenQuizSlots[slotKey] = true;
                     quizzes++;
                 });
-                if (!auditedHere && !examCountedCodes[code]) {
-                    examCountedCodes[code] = true;
-                    exams += (course.exams || []).length;
-                }
+                // Exams: a sitting with a section ([date, start, end, SEC]) counts only
+                // for that section; one without (the usual case) for everyone. Each
+                // sitting counts once per course, however many sections are held.
+                if (!auditedHere) (course.exams || []).forEach(function (x) {
+                    if (!x || x.length < 3) return;
+                    if (x[3] && sec && x[3] !== sec) return;
+                    var slot = code + "|" + x[0] + "|" + x[1] + "|" + x[2];
+                    if (examCountedSlots[slot]) return;
+                    examCountedSlots[slot] = true;
+                    exams++;
+                });
             });
             // Avoid float artifacts (e.g. 7.500000000000001) when summing 1.5-credit courses.
             credits = Math.round(credits * 10) / 10;
@@ -6151,7 +6158,7 @@
                 return false;
             };
             var clashes = 0;
-            var examCounted = {};
+            var examClashSlots = {};
             sels.forEach(function (val) {
                 var code = extractCode(val);
                 var course = window.appCourseData[code];
@@ -6171,13 +6178,14 @@
                     seenClashSlots[slotKey] = true;
                     if (overlapsOther(code, q[1], q[2], q[3])) clashes++;
                 });
-                if (!examCounted[code]) {
-                    examCounted[code] = true;
-                    (course.exams || []).forEach(function (x) {
-                        if (!x || x.length < 3) return;
-                        if (overlapsOther(code, x[0], x[1], x[2])) clashes++;
-                    });
-                }
+                (course.exams || []).forEach(function (x) {
+                    if (!x || x.length < 3) return;
+                    if (x[3] && sec && x[3] !== sec) return;
+                    var slot = code + "|" + x[0] + "|" + x[1] + "|" + x[2];
+                    if (examClashSlots[slot]) return;
+                    examClashSlots[slot] = true;
+                    if (overlapsOther(code, x[0], x[1], x[2])) clashes++;
+                });
             });
             return clashes;
         }

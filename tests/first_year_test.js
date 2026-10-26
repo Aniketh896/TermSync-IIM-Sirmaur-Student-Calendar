@@ -194,4 +194,59 @@ t.ok(Wo.eventsOf(B, CAL2).length === want, 'and the calendar itself is exactly t
 t.ok(/is not a feature TermSync knows/.test(createWorld({ config: base + '\nvar FEATURES = { adminDashbord: false };\n' })
   .exec(W.owner, c => c.SETTINGS_PROBLEMS_.join(' '))), 'a misspelt feature is reported');
 
+t.section('12 · the same batch, with every sheet written differently');
+// The office's and the exam cell's sheets change hands from term to term. Here they
+// spell everything another way — and the calendars must come out the same.
+const Wd = createWorld();
+Wd.mirror = Wd.mirror.map((r, i) => {
+  if (i === 0) return r;
+  const x = r.slice();
+  if (x[5] === 'Ist year') x[5] = '1st Year (MBA 2026-28)';            // year written another way, with the batch
+  if (x[5] === '2nd Year') x[5] = '2nd Year (MBA 2025-27)';
+  if (x[6] === 'ECO') x[6] = 'eco';                                   // code in lower case
+  if (x[6] === 'FIN') x[7] = x[7] ? 'Sec ' + x[7] : x[7];              // "Sec A" instead of "A"
+  if (x[2] === '2:00 PM') { x[2] = '2:00:00 PM'; x[3] = '3:30:00 PM'; } // times with seconds
+  return x;
+});
+// One joint session for sections A and B, written as a single row.
+Wd.mirror.push(['30-Nov-2026', 'Monday', '9:00 AM', '10:30 AM', '09:00 - 10:30', 'Ist year', 'OPS', 'A & B',
+  'Prof. Example OPS', '7', 'AUDI', 'FT', 'OPS A&B 7 Prof. Example OPS AUDI', 'CR-1 Block']);
+// Quizzes: code in lower case, a combined-section cell, and another batch's Term II row.
+Wd.tabs.quiz = Wd.tabs.quiz.replace('ECO,Economics for Managers', 'eco,Economics for Managers')
+  .replace('"MBA 2026-28, PhD26 T-II",A,Prof. Example MKT', '"MBA 2026-28, PhD26 T-II",A and B,Prof. Example MKT')
+  + 'FIN,Finance Basics,16-Oct-2026,Fri,1:00 PM,1:30 PM,MBA 2025-27 T-II,-,Prof. Old,1,240,,,30\n';
+// A mid-term tab whose STAT exam runs per section, at different times.
+Wd.tabs.midterm = ['Midterm Examination Schedule,,,,,,,,,,,,,',
+  'Batch / Term,CourseCode,Course Title,Section,Date,Day,Session,Start Time,End Time,Name of the Faculty ,#Students,Exam Hall,Exam Type,Instructions',
+  'MBA 2026-28 T-II,STAT,STATISTICS,A,26/Oct/26,Mon,Morning,10:00 AM,12:00 PM,Prof. Example STAT,60,AUDI,Closed Book,',
+  'MBA 2026-28 T-II,STAT,STATISTICS,B,26/Oct/26,Mon,Evening,2:00 PM,4:00 PM,Prof. Example STAT,60,AUDI,Closed Book,',
+  'MBA 2026-28 T-II,OPS,OPERATIONS,-,27/Oct/26,Tue,Morning,10:00 AM,12:00 PM,Prof. Example OPS,240,AUDI,Closed Book,'].join('\n') + '\n';
+Wd.ownerFetch();
+const dRows = Wd.masterRows();
+t.ok(dRows.length === 131 && dRows.every(r => /^(ECO|FIN|MKT|OPS|STAT|LEAD|TOUR)$/.test(r[3])),
+  'the timetable reads the same courses (codes matched whatever their case), plus the joint session for A and B (' + dRows.length + ' rows)');
+t.ok(dRows.filter(r => r[3] === 'FIN' && r[4] === 'A').length === 6, '"Sec A" is section A');
+const onNov30 = r => r[0] instanceof Date && r[0].getMonth() === 10 && r[0].getDate() === 30;
+t.ok(dRows.filter(r => r[3] === 'OPS' && onNov30(r)).map(r => r[4]).sort().join() === 'A,B',
+  'the "A & B" session became one class for A and one for B');
+const dQuiz = Wd.SS.getSheetByName('QuizData')._grid.slice(1).filter(r => r[3]).map(r => r[3] + (r[4] ? '-' + r[4] : ''));
+t.ok(dQuiz.sort().join() === 'ECO,MKT-A,MKT-B', 'quizzes: "eco" is ECO, "A and B" is both sections, and the 2025-27 batch\'s Term II quiz is not ours (' + dQuiz.join() + ')');
+const dB = Wd.exec(B, c => c.getMyElectives());
+Wd.exec(B, c => c.enableAutoSync(keysOf(dB), {}, 'op-d'));
+const evD = Wd.eventsOf(B, CAL2);
+const statB = evD.filter(e => /^📕 STAT/.test(e.summary));
+t.ok(statB.length === 1 && new Date(statB[0].start.dateTime).getHours() === 14,
+  'a section-B student gets only section B\'s STAT sitting (14:00), not section A\'s');
+t.ok(evD.filter(e => /^📕 OPS/.test(e.summary)).length === 1, 'and the whole-course OPS exam once');
+t.ok(evD.filter(e => /^📝 MKT/.test(e.summary)).length === 1, 'and the A-and-B MKT quiz');
+t.ok(evD.some(e => /^OPS \(B\)/.test(e.summary) && new Date(e.start.dateTime).getDate() === 30), 'and the joint OPS session');
+const fin2 = evD.filter(e => /^FIN \(B\)/.test(e.summary) && new Date(e.start.dateTime).getHours() === 14);
+t.ok(fin2.every(e => new Date(e.end.dateTime).getMinutes() === 30), '"2:00:00 PM – 3:30:00 PM" classes keep their times');
+const dA = Wd.exec(A, c => c.getMyElectives());
+Wd.exec(A, c => c.enableAutoSync(keysOf(dA), {}, 'op-da'));
+const statA = Wd.eventsOf(A, CAL2).filter(e => /^📕 STAT/.test(e.summary));
+t.ok(statA.length === 1 && new Date(statA[0].start.dateTime).getHours() === 10, 'and a section-A student only section A\'s (10:00)');
+const prevD = Wd.exec(B, c => c.getCourseData().STAT.exams.map(x => x[3]).sort().join());
+t.ok(prevD === 'A,B', 'the course picker is told each sitting\'s section, so its preview counts only the student\'s own');
+
 t.done('First-year end to end verified');

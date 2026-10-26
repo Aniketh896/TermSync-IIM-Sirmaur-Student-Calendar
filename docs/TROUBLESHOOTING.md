@@ -77,6 +77,15 @@ over cell A1 of the `ManualTimetable` tab. Re-paste whenever it changes.
 
 ## Quizzes and exams
 
+**An exam shows up twice, or at another section's time**
+If the exam tab lists sittings per section, it needs a column named *Section* (or
+*Group*) — then each student gets only their own. Without that column every sitting
+is treated as the whole course's.
+
+**A joint session ("A & B") or quiz shows for only one section, or none**
+TermSync reads "A & B", "A, B", "A/B", "A+B" and "A and B" as both sections, but only
+for section letters on your roster. Check that `STUDENTS` gives those sections.
+
 **A quiz or exam is missing from calendars**
 1. Is it in the `QuizData` / `ExamData` tab? If not: ✓ Check settings shows every
    `Batch / Term` value in that tab and whether it was KEPT. The tags come from

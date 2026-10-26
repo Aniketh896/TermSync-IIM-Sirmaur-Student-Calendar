@@ -112,7 +112,7 @@ Ask in this order. Format: **what to ask** — *where they find it* → what you
 **About them**
 
 1. ★ **Their full name and roll number**; LinkedIn link (optional). → `MAINTAINER`
-   (roll upper case, e.g. `MBA26017`; link a full `https://…` or `""`).
+   (roll upper case, e.g. `MBA26917`; link a full `https://…` or `""`).
 
 **About the term**
 
@@ -140,7 +140,9 @@ Ask in this order. Format: **what to ask** — *where they find it* → what you
    *the previous maintainer, the SAC or the exam cell usually has them; they contain
    `/d/e/2PACX-`* → `quizSchedule`, `midTermSchedule`, `endTermSchedule`. A normal
    `/spreadsheets/d/…/edit` link doesn't work here — the sheet's owner must use
-   File → Share → Publish to web for that tab.
+   File → Share → Publish to web for that tab. If exams are sat at different
+   times by different sections, the exam tab needs a *Section* column — then each
+   student gets only their own sitting.
 7. ○ **Other published links**: academic calendar, course catalogue, OLT marks
    record → `academicCalendar`, `courseCatalogue`, `marksStatus`. Blank is fine.
 
@@ -157,6 +159,8 @@ Ask in this order. Format: **what to ask** — *where they find it* → what you
    batch's rows and the sections each runs in, and ask only for names and credits.
    Ask: *"Are any courses only for MBA-TM (or another programme)?"* → `onlyFor:
    ["MBATM"]` on those. In Terms 1–3 never add `required: true`.
+   Codes written slightly differently in other sheets ("QAM II" vs "QAM-II", lower
+   case) are matched automatically — use the timetable's spelling here.
 10. ◆ **The SAC team** — rolls, and who's the point of contact → `SAC_TEAM` lines
     `ROLL, poc` / `ROLL, member`. (Their own roll is added automatically.) Needed for
     the admin dashboard (A4) to be useful to anyone but them.

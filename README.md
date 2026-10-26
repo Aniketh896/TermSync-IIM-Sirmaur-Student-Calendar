@@ -193,6 +193,17 @@ Setup Step 8 shares it with everyone at IIM Sirmaur as *Viewer*. Without it, the
 syncs can't read the timetable and their calendars stay empty. Viewers can't change
 anything, and the tabs with personal data are hidden.
 
+### How it tells your rows from everyone else's
+
+Each sheet is shared by both years and several terms, and typed by different people.
+TermSync keeps a row only when it's **your batch** (the timetable's *Year/Batch*
+column; a row naming another batch's years is never kept), **this term** (the quiz /
+exam *Batch / Term* column), and **one of your courses** — and it reads sections
+("Sec A", "A & B", "All"), course codes ("QAM II" = "QAM-II"), times and dates
+however they're written. The full list of rules: [docs/HOW_IT_WORKS.md → How
+TermSync reads the institute's sheets](docs/HOW_IT_WORKS.md#how-termsync-reads-the-institutes-sheets).
+✓ Check settings shows what it found and kept in each sheet.
+
 ### When something goes wrong
 
 - A sheet can't be read → **nothing is deleted**; everyone keeps what they had.

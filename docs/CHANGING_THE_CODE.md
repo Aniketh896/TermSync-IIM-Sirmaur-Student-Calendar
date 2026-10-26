@@ -116,6 +116,11 @@ The parts most likely to need code changes, and where they are in `code.gs`:
 | Elective allotment | `getElectiveCatalogue_`, `getElectiveSectionMaps_` | a `Summary` tab (`Course Title, abbreviation, No of Students, # Section`) and one tab per course (`Roll No, Name, Email Id, [Section]`) |
 | Academic calendar | `getAcademic_` | a header row `Term, Event, From_Date, …, To_date` |
 
+The rules for reading a cell — sections, course codes, times, dates, term and year
+tags, the batch guard — are shared by all of these and live together near the top
+of `code.gs` ([HOW_IT_WORKS.md → The reading rules in the code](HOW_IT_WORKS.md#the-reading-rules-in-the-code)).
+A new spelling usually needs a change there, not in a parser.
+
 Give your AI assistant the new sheet's first few rows (with any personal data
 removed) and the function name, and ask it to update the parser **and** add a check
 with the new layout to `tests/`.

@@ -121,9 +121,17 @@ var TERM_PRESETS_ = {
 };
 // Terms 1–3 are the first year: everyone takes the core courses in their own
 // section. Terms 4–6 are the second year: electives.
+// The year tags cover the ways the office has written, or could plausibly write,
+// a year: "Ist year", "1st Year", "First Year", "Year 1", "I Year"; "2nd Year",
+// "II Year", "Second Year", "Year 2". "IYEAR" is inside "IIYEAR" and "YEARI" inside
+// "YEARII", so the first year's ignore list names the second year's spellings.
 var YEAR_PRESETS_ = {
-  first:  { yearTags: ["1STYEAR", "ISTYEAR"], ignoreYearTags: ["2NDYEAR", "IIYEAR"], courseSelection: "section" },
-  second: { yearTags: ["2NDYEAR", "IIYEAR", "2NDYR"], ignoreYearTags: [], courseSelection: "electives" }
+  first:  { yearTags: ["1STYEAR", "ISTYEAR", "FIRSTYEAR", "YEAR1", "YEARI", "IYEAR"],
+            ignoreYearTags: ["2NDYEAR", "IIYEAR", "IINDYEAR", "SECONDYEAR", "YEAR2", "YEARII", "2NDYR"],
+            courseSelection: "section" },
+  second: { yearTags: ["2NDYEAR", "IIYEAR", "IINDYEAR", "SECONDYEAR", "YEAR2", "YEARII", "2NDYR"],
+            ignoreYearTags: ["1STYEAR", "ISTYEAR", "FIRSTYEAR", "YEAR1"],
+            courseSelection: "electives" }
 };
 var TERM_NUMBER_ = (function () {
   var raw = settingText_(THIS_TERM.number);
@@ -209,6 +217,33 @@ var TERM_CONFIG_ = (function () {
 })();
 
 var CALENDAR_NAME = TERM_CONFIG_.calendarName;
+
+// This batch's years, from THIS_TERM.batch ("Batch 26-28" → 2026–2028), or null.
+// Sheets shared by both batches often name the batch in the same cell as the term
+// or year ("MBA 2026-28, PhD26 T-II", "MBA & MBA-TM 2025-27 Term-V"). A row that
+// names a batch, and not this one, is never this batch's — whatever its tags say.
+// Only two-year spans count as a batch: "AY 2026-27" is an academic year.
+var BATCH_YEARS_ = (function () {
+  var m = /(\d{2,4})\s*[-–]\s*(\d{2,4})/.exec(settingText_(THIS_TERM.batch));
+  if (!m) return null;
+  var a = Number(m[1]) < 100 ? 2000 + Number(m[1]) : Number(m[1]);
+  var b = Number(m[2]) < 100 ? 2000 + Number(m[2]) : Number(m[2]);
+  return b - a === 2 ? { start: a, end: b } : null;
+})();
+
+function namesAnotherBatch_(cell) {
+  if (!BATCH_YEARS_) return false;
+  var re = /(?:^|[^0-9])((?:19|20)?\d{2})\s*[-–]\s*((?:19|20)?\d{2})(?![0-9])/g;
+  var s = String(cell == null ? "" : cell), m, sawBatch = false;
+  while ((m = re.exec(s)) !== null) {
+    var a = Number(m[1]) < 100 ? 2000 + Number(m[1]) : Number(m[1]);
+    var b = Number(m[2]) < 100 ? 2000 + Number(m[2]) : Number(m[2]);
+    if (b - a !== 2) continue;
+    if (a === BATCH_YEARS_.start && b === BATCH_YEARS_.end) return false;
+    sawBatch = true;
+  }
+  return sawBatch;
+}
 
 // How each student's courses are found — see enrolmentMode_.
 var COURSE_SELECTION_ = settingText_(termValue_("courseSelection",
@@ -565,6 +600,123 @@ function trimGrid_(grid) {
   return last === -1 ? [] : grid.slice(0, last + 1);
 }
 
+// ── How a cell is read: the rules shared by every institute sheet ─────────────
+// The office's timetable, the quiz and exam tabs, the guest-lecture / feedback
+// tabs and the elective allotment are typed by different people, term after term,
+// for both years. The same fact turns up written several ways — section "A" as
+// "Sec A", sections A and B as "A & B" / "A,B" / "A and B", course "QAM-II" as
+// "QAM II", 2 pm as "2:00:00 PM" or "14.00". Every parser goes through the helpers
+// below, so a spelling that works in one sheet works in all of them, and a rule
+// is changed in one place.
+
+// "Sec A", "Section-A", " a " → "A". Anything else is kept, upper-cased and
+// without spaces, so a group name ("TM", "A1") still compares exactly.
+function normalizeSection_(s) {
+  return settingText_(s).toUpperCase()
+    .replace(/^(SECTION|SEC)S?(?=[\s.:\-]|$)[\s.:\-]*/, "").replace(/\s+/g, "");
+}
+
+// The section letters the roster uses — what decides whether "AB" means sections
+// A and B or is the name of a single group. Memoised per execution.
+var ROSTER_SECTIONS_MEMO_ = null;
+function rosterSections_() {
+  if (ROSTER_SECTIONS_MEMO_) return ROSTER_SECTIONS_MEMO_;
+  var out = {};
+  var rolls = Object.keys(STUDENT_ROSTER_);
+  for (var i = 0; i < rolls.length; i++) {
+    if (STUDENT_ROSTER_[rolls[i]][1]) out[STUDENT_ROSTER_[rolls[i]][1]] = true;
+  }
+  ROSTER_SECTIONS_MEMO_ = out;
+  return out;
+}
+
+// One section cell → the sections it covers. [""] means "every section of the
+// course" ("-", blank, "All", "Both", "Common"); several entries mean a joint
+// session ("A & B", "A, B", "A/B", "A+B", "A and B", or "AB" when A and B are both
+// sections on the roster); anything else is one section or group, normalised.
+// A cell that names something other than sections ("A & TM") is kept whole rather
+// than guessed at.
+function splitSectionCell_(cell) {
+  var raw = settingText_(cell);
+  var flat = raw.toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (!flat || /^(ALL|ALLSECTIONS|BOTH|NA|COMMON|WHOLEBATCH|ENTIREBATCH)$/.test(flat)) return [""];
+  var known = rosterSections_();
+  var hasRoster = Object.keys(known).length > 0;
+  var isSection = function (t) { return hasRoster ? !!known[t] : /^[A-H]$/.test(t); };
+  var parts = raw.toUpperCase().replace(/\bSEC(TION)?S?\b\.?/g, " ")
+    .split(/\s*(?:&|,|\/|\+|\bAND\b)\s*/)
+    .map(function (p) { return p.replace(/\s+/g, ""); })
+    .filter(function (p) { return p; });
+  var uniq = function (list) {
+    var seen = {}, out = [];
+    list.forEach(function (x) { if (!seen[x]) { seen[x] = true; out.push(x); } });
+    return out;
+  };
+  if (parts.length > 1 && parts.every(isSection)) return uniq(parts);
+  if (/^[A-Z]{2,8}$/.test(flat) && !/([A-Z]).*\1/.test(flat) && flat.split("").every(isSection) &&
+      !(hasRoster && known[flat])) {
+    return flat.split("");
+  }
+  return [normalizeSection_(raw)];
+}
+
+// A course code reduced to what identifies it: upper case, without spaces,
+// hyphens, dots, underscores or slashes. "QAM-II", "QAM II" and "qam ii" are one
+// course; "M&A" keeps its "&".
+function courseCodeKey_(s) {
+  return settingText_(s).toUpperCase().replace(/[\s\-_.\/]+/g, "");
+}
+
+// The COURSES code a sheet's cell stands for. An exact match wins; otherwise the
+// code is matched on courseCodeKey_, so a sheet that spells a code differently
+// from COURSES still lands on the right course. A cell that matches no course is
+// returned trimmed (upper-cased when `upper`), as the parsers always did — Check
+// settings lists such codes.
+var COURSE_CODE_KEYS_MEMO_ = null;
+function canonicalCourseCode_(raw, upper) {
+  var t = settingText_(raw);
+  if (!t) return "";
+  if (COURSE_INFO_.hasOwnProperty(t)) return t;
+  if (COURSE_CODE_KEYS_MEMO_ === null) {
+    COURSE_CODE_KEYS_MEMO_ = {};
+    var clash = {};
+    Object.keys(COURSE_INFO_).forEach(function (code) {
+      var k = courseCodeKey_(code);
+      if (COURSE_CODE_KEYS_MEMO_[k] && COURSE_CODE_KEYS_MEMO_[k] !== code) clash[k] = true;
+      COURSE_CODE_KEYS_MEMO_[k] = code;
+    });
+    // Two courses that differ only by punctuation can't be told apart this way;
+    // those stay exact-match only.
+    Object.keys(clash).forEach(function (k) { delete COURSE_CODE_KEYS_MEMO_[k]; });
+  }
+  var hit = COURSE_CODE_KEYS_MEMO_[courseCodeKey_(t)];
+  if (hit) return hit;
+  return upper ? t.toUpperCase() : t;
+}
+
+// A time cell as parseTime_ reads it: "2:00:00 PM" → "2:00 PM", "14.00" → "14:00",
+// "9:30 a.m." → "9:30 am", "1400 hrs" / "14:00 hrs" → "14:00".
+function cleanTimeText_(val) {
+  return String(val == null ? "" : val).trim()
+    .replace(/\s*\b(a|p)\.?\s*m\.?$/i, " $1m")
+    .replace(/\s*hrs?\.?$/i, "")
+    .replace(/^(\d{1,2})\.(\d{2})(?=\s|$)/, "$1:$2")
+    .replace(/^(\d{2})(\d{2})$/, "$1:$2")
+    .replace(/^(\d{1,2}:\d{2}):\d{2}(?=\s|$)/, "$1")
+    .trim();
+}
+
+// The term a label names, as a number: "Term II", "Term-2", "TERM 2", "T-II",
+// "Term II (MBA)" → 2. 0 when it names none. Lets the academic calendar's "Term"
+// column be matched whichever way a batch's calendar writes it.
+function termNumberOf_(label) {
+  var m = /\bT(?:ERM)?[\s\-.]*(VI|IV|V|III|II|I|[1-6])(?![A-Z0-9])/i.exec(settingText_(label));
+  if (!m) return 0;
+  var v = m[1].toUpperCase();
+  var n = TERM_ROMAN_.indexOf(v);
+  return n > 0 ? n : (parseInt(v, 10) || 0);
+}
+
 // ── The institute's MIRROR timetable ──────────────────────────────────────────
 // The PGP office maintains a flat mirror of the master timetable covering BOTH
 // running terms, one row per class, with every field already in its own column:
@@ -661,6 +813,7 @@ function parseMirrorTimetable_(grid, issues) {
     // 1st-year-only placeholder that carries no course; guarded even though the
     // year filter above should already have removed it.
     if (code.toLowerCase().indexOf("phd class") !== -1) continue;
+    code = canonicalCourseCode_(code);
 
     var rawDate = get(row, col.date);
     var dateObj = parseSheetDate_(rawDate);
@@ -700,55 +853,61 @@ function parseMirrorTimetable_(grid, issues) {
       continue;
     }
 
-    var section = get(row, col.grp).toUpperCase();
     var faculty = get(row, col.faculty) || "Unknown";
     var room = get(row, col.room) || "TBD";
     var session = get(row, col.session);
     var info = COURSE_INFO_[code];
     var courseName = (info && info.name) || code;
-
-    // Exactly the shape the legacy parser produces, so everything downstream —
-    // MasterData layout, the change-log diff, computeEventSig_ — is unchanged.
-    var cleanRow = [dateObj, range.start, range.end, code, section, courseName, faculty, room, session];
-    var classKey = JSON.stringify(cleanRow);
-    var sittingKey = code + "|" + section + "|" + dateObj.getTime() + "|" + range.start + "|" + range.end;
-    if (seenSitting[sittingKey]) {
-      // An exact repeat is a harmless copy-paste in the sheet; one that differs is
-      // a contradiction the office needs to resolve. Either way only the first is
-      // kept, so no student ever gets two events on one slot.
-      duplicateSittings++;
-      if (!seenClass[classKey]) {
-        issues.push("Mirror timetable row " + (i + 1) + " (" + code +
-          (section ? " " + section : "") + " on " + rawDate + " " + range.start + "-" + range.end +
-          "): a second, DIFFERENT row for the same sitting (room \"" + room + "\", faculty \"" +
-          faculty + "\", session \"" + session + "\") — kept the first, skipped this one.");
-      }
-      continue;
-    }
-    seenSitting[sittingKey] = true;
-    var perKeyName = section ? code + "-" + section : code;
-    perKey[perKeyName] = (perKey[perKeyName] || 0) + 1;
-    if (!seenClass[classKey]) {
-      seenClass[classKey] = true;
-      classes.push(cleanRow);
-    }
-
-    // Inline markers → the GL / FD row shape (see parseSessionScheduleCsv_):
-    //   [dd/MM/yyyy, start, end, CODE, SECTION, faculty, session]
     var composite = get(row, col.composite);
-    if (composite) {
-      var sessionRow = [
-        Utilities.formatDate(dateObj, Session.getScriptTimeZone(), "dd/MM/yyyy"),
-        range.start, range.end, code, section, get(row, col.faculty), session
-      ];
-      var sessionKey = sessionRow.slice(0, 5).join("|");
-      if (/\(\s*guest\s+lecture\s*\)/i.test(composite) && !seenGuest[sessionKey]) {
-        seenGuest[sessionKey] = true;
-        guest.push(sessionRow);
+
+    // A joint session ("A & B") is one row in the sheet but a class for each
+    // section, so it becomes one row per section — a student in A matches it the
+    // same way as any other section-A class. See splitSectionCell_.
+    var sections = splitSectionCell_(get(row, col.grp));
+    for (var si = 0; si < sections.length; si++) {
+      var section = sections[si];
+      // Exactly the shape the legacy parser produces, so everything downstream —
+      // MasterData layout, the change-log diff, computeEventSig_ — is unchanged.
+      var cleanRow = [dateObj, range.start, range.end, code, section, courseName, faculty, room, session];
+      var classKey = JSON.stringify(cleanRow);
+      var sittingKey = code + "|" + section + "|" + dateObj.getTime() + "|" + range.start + "|" + range.end;
+      if (seenSitting[sittingKey]) {
+        // An exact repeat is a harmless copy-paste in the sheet; one that differs is
+        // a contradiction the office needs to resolve. Either way only the first is
+        // kept, so no student ever gets two events on one slot.
+        duplicateSittings++;
+        if (!seenClass[classKey]) {
+          issues.push("Mirror timetable row " + (i + 1) + " (" + code +
+            (section ? " " + section : "") + " on " + rawDate + " " + range.start + "-" + range.end +
+            "): a second, DIFFERENT row for the same sitting (room \"" + room + "\", faculty \"" +
+            faculty + "\", session \"" + session + "\") — kept the first, skipped this one.");
+        }
+        continue;
       }
-      if (/\(\s*feedback\s*\)/i.test(composite) && !seenFeedback[sessionKey]) {
-        seenFeedback[sessionKey] = true;
-        feedback.push(sessionRow);
+      seenSitting[sittingKey] = true;
+      var perKeyName = section ? code + "-" + section : code;
+      perKey[perKeyName] = (perKey[perKeyName] || 0) + 1;
+      if (!seenClass[classKey]) {
+        seenClass[classKey] = true;
+        classes.push(cleanRow);
+      }
+
+      // Inline markers → the GL / FD row shape (see parseSessionScheduleCsv_):
+      //   [dd/MM/yyyy, start, end, CODE, SECTION, faculty, session]
+      if (composite) {
+        var sessionRow = [
+          Utilities.formatDate(dateObj, Session.getScriptTimeZone(), "dd/MM/yyyy"),
+          range.start, range.end, code, section, get(row, col.faculty), session
+        ];
+        var sessionKey = sessionRow.slice(0, 5).join("|");
+        if (/\(\s*guest\s+lecture\s*\)/i.test(composite) && !seenGuest[sessionKey]) {
+          seenGuest[sessionKey] = true;
+          guest.push(sessionRow);
+        }
+        if (/\(\s*feedback\s*\)/i.test(composite) && !seenFeedback[sessionKey]) {
+          seenFeedback[sessionKey] = true;
+          feedback.push(sessionRow);
+        }
       }
     }
   }
@@ -1275,7 +1434,7 @@ var RESYNC_VERSION = "2026-09-09";
 // New version" and the two quietly diverge. The scheduled fetch stamps the saved
 // build into Script Properties; getSyncHealth, answering from the deployed version,
 // hands both to the creator's admin panel, which warns when saved is newer.
-var BUILD_ID_ = "2026-10-26a";
+var BUILD_ID_ = "2026-10-27a";
 
 // How often each user's backgroundSync trigger fires, in minutes. SINGLE SOURCE OF
 // TRUTH for the per-user cadence — change this one number to retune it. Must be one
@@ -1328,7 +1487,8 @@ var STUDENT_ROSTER_ = (function () {
       continue;
     }
     if (out[roll]) settingsProblem_('STUDENTS: ' + roll + ' is listed twice; the later line wins.');
-    out[roll] = [c[1].replace(/\s+/g, " "), (c[2] || "").toUpperCase()];
+    // "Sec A" / "section-a" → "A", the same way every sheet's section cell is read.
+    out[roll] = [c[1].replace(/\s+/g, " "), normalizeSection_(c[2])];
   }
   return out;
 })();
@@ -2902,7 +3062,11 @@ function settingsReport_(opts) {
     if (!rowsAc) bad.push('Academic calendar: the link could not be read. Is that tab published to the web?');
     else {
       var want = TERM_CONFIG_.academicTerm.toUpperCase();
-      var hits = rowsAc.filter(function (row) { return String(row[0] || "").trim().toUpperCase() === want; }).length;
+      var wantN = termNumberOf_(want);
+      var hits = rowsAc.filter(function (row) {
+        var cell = String(row[0] || "").trim().toUpperCase();
+        return cell === want || (wantN > 0 && termNumberOf_(cell) === wantN);
+      }).length;
       if (hits) ok.push('Academic calendar: ' + hits + ' row(s) for "' + TERM_CONFIG_.academicTerm + '".');
       else warn.push('Academic calendar: no row\'s "Term" column says "' + TERM_CONFIG_.academicTerm +
         '" — check THIS_TERM.academicCalendarTerm. Using the backup dates in config.gs.');
@@ -3089,13 +3253,13 @@ function getUsageHash_(email) {
 
 // Email format is <RollNo>@<INSTITUTE.emailDomain> (e.g. mba26901@iimsirmaur.ac.in).
 // Roster keys are expected to be uppercase; we also build a case-insensitive index
-// once so a stray mixed-case key (e.g. "PhD26001") can never silently fail to match.
+// once so a stray mixed-case key (e.g. "PhD26901") can never silently fail to match.
 var STUDENT_ROSTER_UC_ = null;
 function getRosterIndex_() {
   if (STUDENT_ROSTER_UC_) return STUDENT_ROSTER_UC_;
   STUDENT_ROSTER_UC_ = {};
   // Collision guard: two roster keys that fold to the same uppercase roll (an
-  // accidental duplicate, or a case-variant like "PhD26001" vs "PHD26001") would
+  // accidental duplicate, or a case-variant like "PhD26901" vs "PHD26901") would
   // silently shadow each other here, mapping a real student to the wrong name or
   // section. Detect it and warn the admin (Stackdriver) — the build still
   // succeeds (last-write-wins, unchanged behaviour), so a typo never breaks the
@@ -6183,15 +6347,18 @@ function getPrintableTimetable() {
     });
   }
 
-  // Exam events for the enrolled courses — matched by course code (exams have no
-  // section), marked isExam so the PDF styles them as the standout blue exam cards.
+  // Exam events for the enrolled courses — matched by course code, and by section
+  // when the exam tab gives sittings per section (rowSectionApplies_) — marked isExam
+  // so the PDF styles them as the standout blue exam cards.
   // Mirrors appendExamEvents_'s skip rules (and its combined mid-term + end-term
   // source) so the PDF matches the calendar.
   var examRowsPdf = getAllExamRows_();
+  var pdfExamSeen = {};
   for (var x = 0; x < examRowsPdf.length; x++) {
     var xRow = examRowsPdf[x];
     var xCode = xRow[3] ? xRow[3].toString().trim().toUpperCase() : "";
     if (!xCode || !pdfAssessmentCodes[xCode]) continue;
+    if (!rowSectionApplies_(xRow[4], pdfAssessmentCodes[xCode])) continue;
     var xDate = parseSheetDate_(xRow[0]);
     if (!xDate || !isWithinSyncWindow_(xDate)) continue;
     var xs, xe;
@@ -6202,6 +6369,11 @@ function getPrintableTimetable() {
       continue;
     }
     if (!isValidTimeRange_(xs, xe)) continue;
+    if (!Object.keys(pdfAssessmentCodes[xCode]).length) {
+      var xSlot = xCode + "|" + xDate.getTime() + "|" + xs.h + ":" + xs.m + "|" + xe.h + ":" + xe.m;
+      if (pdfExamSeen[xSlot]) continue;   // one sitting, listed once per section
+      pdfExamSeen[xSlot] = true;
+    }
     var xInfo = COURSE_INFO_[xCode];
     distinctCodes[xCode] = true; // exam-only course — keep it in the legend/breakdown
     events.push({
@@ -6465,7 +6637,11 @@ function getElectivesTabGids_() {
 // The optional trailing letter matches repeat students, who carry a suffix and an
 // earlier batch year ("MBA24999R" sitting in the 25-27 batch's Term 5 courses).
 // Requiring digits to the end silently dropped one such student from five courses.
-var ELECTIVE_ROLL_PATTERN_ = /^(MBA|MBATM|MBATTHM|PHD)[0-9]{2}[0-9]+[A-Z]?$/;
+//
+// Any programme's prefix (MBA, MBATM, MBATTHM, PHD, or one added later) followed by
+// the batch year and number: letters, then at least four digits, then an optional
+// letter. Header and side-table text never has that shape.
+var ELECTIVE_ROLL_PATTERN_ = /^[A-Z]{2,10}[0-9]{4,}[A-Z]?$/;
 
 // Every key a student might be looked up by. A repeat student's roll carries a
 // trailing letter in the sheet ("MBA24999R") while their institute email is the
@@ -6614,7 +6790,7 @@ function getElectiveSectionMaps_(codes) {
       for (var j = 0; j < rows.length; j++) {
         var roll = (rows[j][0] || "").toString().trim().toUpperCase();
         if (!ELECTIVE_ROLL_PATTERN_.test(roll)) continue;
-        var sec = ((rows[j].length > 3 && rows[j][3]) || "").toString().trim().toUpperCase();
+        var sec = normalizeSection_((rows[j].length > 3 && rows[j][3]) || "");
         // Guard against the side table bleeding in: a real section label is one
         // or two characters ("A", "B"). Anything longer is not a section, and the
         // student is recorded as enrolled with no section rather than skipped.
@@ -6679,7 +6855,7 @@ function getElectiveCatalogue_() {
   if (headerIdx === -1) return [];
   var out = [];
   for (var i = headerIdx + 1; i < rows.length; i++) {
-    var code = (rows[i][1] || "").toString().trim().toUpperCase();
+    var code = canonicalCourseCode_(rows[i][1], true);
     var name = (rows[i][0] || "").toString().trim();
     if (!code || !name) continue;
     // "-" marks a course with no cohort split (independent study, dissertation).
@@ -6918,8 +7094,9 @@ function buildCourseData_(cache, key) {
   }
 
   // Attach per-course exam markers as [date, startMin, endMin] so the client can
-  // preview how many exam events a selection will add (exams.length — exams have
-  // no section) and run the same overlap warning. Same skip rules AND same combined
+  // preview how many exam events a selection will add (filtered by section on the
+  // client when a sitting has one; most exams have none) and run the same overlap
+  // warning. Same skip rules AND same combined
   // mid-term + end-term source as appendExamEvents_, so the preview count matches
   // what the sync actually creates.
   var examRowsPrev = getAllExamRows_();
@@ -6940,7 +7117,10 @@ function buildCourseData_(cache, key) {
     courses[xKey].exams.push([
       Utilities.formatDate(xDate, tzPrev, "yyyy-MM-dd"),
       (xsPrev.h * 60) + xsPrev.m,
-      (xePrev.h * 60) + xePrev.m
+      (xePrev.h * 60) + xePrev.m,
+      // The sitting's section ("" = the whole course), so the preview counts only
+      // the sitting a student will actually get.
+      examRowsPrev[x][4] ? examRowsPrev[x][4].toString().trim().toUpperCase() : ""
     ]);
   }
 
@@ -7018,7 +7198,7 @@ function configuredSubjectReps_() {
   var rows = settingRows_(CFG_.subjectReps);
   for (var i = 0; i < rows.length; i++) {
     var c = rows[i].cells;
-    var code = (c[0] || "").trim();
+    var code = canonicalCourseCode_(c[0], true);
     var secRaw = (c[1] || "").trim();
     var name = (c[2] || "").trim();
     var roll = (c[3] || "").toUpperCase().replace(/\s+/g, "");
@@ -7028,7 +7208,7 @@ function configuredSubjectReps_() {
       }
       continue;
     }
-    reps.push({ code: code, sec: (secRaw === "-" ? "" : secRaw.toUpperCase()), name: titleCaseName_(name), roll: roll });
+    reps.push({ code: code, sec: (secRaw === "-" ? "" : normalizeSection_(secRaw)), name: titleCaseName_(name), roll: roll });
   }
   return reps;
 }
@@ -7127,6 +7307,10 @@ function getAcademic_() {
     if (!rows || !rows.length) return fallback;
     var termName = (TERM_CONFIG_.academicTerm || "").trim().toUpperCase();
     if (!termName) return fallback;
+    // "Term II", "Term-II", "TERM 2" are the same term; calendars have written it
+    // each way. Exact text still matches when the label carries no term number.
+    var termN = termNumberOf_(termName);
+    var isOurTerm = function (cell) { return cell === termName || (termN > 0 && termNumberOf_(cell) === termN); };
 
     var headerIdx = -1;
     for (var h = 0; h < Math.min(rows.length, 6); h++) {
@@ -7146,7 +7330,7 @@ function getAcademic_() {
       var startIso = parseDmyToIso_(rows[i][2]);
       var endIso = parseDmyToIso_(rows[i][4]) || startIso;
 
-      if (tu === termName) {
+      if (isOurTerm(tu)) {
         sawCurrent = true;
         if (!startIso) continue;
         if (/mid[\s-]*term\s+exam/i.test(event)) {
@@ -7969,14 +8153,17 @@ function enrolmentMode_() {
 }
 
 // A roll may take a course unless the course is limited (COURSES → onlyFor) to
-// roll prefixes the roll does not start with — e.g. an MBA-TM-only core course.
+// programmes the roll isn't in — e.g. an MBA-TM-only core course. A prefix must be
+// the roll's whole programme part: "MBA" matches MBA26901 but not MBATM26901, so
+// onlyFor: ["MBA"] really means MBA students only.
 function rollMayTakeCourse_(roll, code) {
   var info = COURSE_INFO_[code];
   if (!info) return false;
   if (!info.onlyFor || !info.onlyFor.length) return true;
   var r = String(roll || "").toUpperCase();
   for (var i = 0; i < info.onlyFor.length; i++) {
-    if (r.indexOf(info.onlyFor[i]) === 0) return true;
+    var p = info.onlyFor[i];
+    if (r.indexOf(p) === 0 && !/[A-Z]/.test(r.charAt(p.length))) return true;
   }
   return false;
 }
@@ -10013,8 +10200,17 @@ var QUIZ_MONTHS_ = {
 // Date (day 31 of a 30-day month, month 14, day 0) is rejected.
 function parseQuizDate_(val) {
   if (val instanceof Date) return isNaN(val.getTime()) ? null : val;
-  var s = val ? val.toString().trim() : "";
+  // A leading weekday ("Mon, 14-Sep-2026", "Monday 14 Sep 2026") says nothing the
+  // date doesn't, and would otherwise be read as the day.
+  var s = val ? val.toString().trim()
+    .replace(/^(mon|tue|wed|thu|fri|sat|sun)[a-z]*\.?,?\s+(?=\d|[a-z]{3})/i, "") : "";
   if (!s) return null;
+  // Month first: "Sep 14, 2026", "September 14 2026".
+  var mdy = s.match(/^([a-z]{3,9})\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{2,4})$/i);
+  if (mdy && QUIZ_MONTHS_[mdy[1].toLowerCase().substring(0, 3)] != null) {
+    var yr0 = parseInt(mdy[3], 10);
+    return exactDate_(yr0 < 100 ? yr0 + 2000 : yr0, QUIZ_MONTHS_[mdy[1].toLowerCase().substring(0, 3)], parseInt(mdy[2], 10));
+  }
   var ymd = s.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})(?![\d])/);
   if (ymd) return exactDate_(parseInt(ymd[1], 10), parseInt(ymd[2], 10) - 1, parseInt(ymd[3], 10));
   var parts = s.split(/[\/\-\s]+/);
@@ -10055,6 +10251,7 @@ function exactDate_(yr, mon, day) {
 // Without that ordering a Term VI row would read as a Term V row.
 function isTermRow_(termCell) {
   if (!termCell) return false;
+  if (namesAnotherBatch_(termCell)) return false;   // another batch's row, whatever its term
   var t = termCell.toString().toUpperCase().replace(/\s+/g, "");
   var exclude = TERM_CONFIG_.excludeTermTags || [];
   for (var e = 0; e < exclude.length; e++) {
@@ -10133,7 +10330,7 @@ function parseQuizCsv_(rawText, issues) {
   for (var i = headerRow + 1; i < csv.length; i++) {
     var row = csv[i];
     if (!row) continue;
-    var code = get(row, col.code).toUpperCase();
+    var code = canonicalCourseCode_(get(row, col.code), true);
     if (!code) continue;
     if (!isTermRow_(get(row, col.term))) continue;
 
@@ -10154,24 +10351,10 @@ function parseQuizCsv_(rawText, issues) {
       continue;
     }
 
-    var section = get(row, col.section);
-    // "-", "All", "All sections", "Both", "NA", "Common" all mean "applies to
-    // every section" — normalize to "" so the section matcher doesn't silently
-    // drop the quiz for every sectioned student. ("AND" is stripped after
-    // flattening so "A and B" reads as the combined-section value "AB".)
-    var secFlat = section.toUpperCase().replace(/[^A-Z0-9]/g, "").replace(/AND/g, "");
-    var sectionList;
-    if (secFlat === "" || secFlat === "ALL" || secFlat === "ALLSECTIONS" ||
-        secFlat === "BOTH" || secFlat === "NA" || secFlat === "COMMON") {
-      sectionList = [""];
-    } else if (/^[A-E]{2,5}$/.test(secFlat) && !/([A-E]).*\1/.test(secFlat)) {
-      // A combined-section cell ("A & B", "A,B", "A/B") — emit one row PER
-      // section. Left as-is, the flattened value ("AB") matches no student's
-      // section and the quiz silently vanishes for everyone enrolled.
-      sectionList = secFlat.split("");
-    } else {
-      sectionList = [section];
-    }
+    // "-" / "All" / "Both" mean every section ([""]); a combined cell ("A & B")
+    // becomes one row PER section — left as-is, it would match no student's section
+    // and the quiz would silently vanish for everyone enrolled. See splitSectionCell_.
+    var sectionList = splitSectionCell_(get(row, col.section));
     var info = COURSE_INFO_[code];
     var courseName = (info && info.name) || code;
 
@@ -10462,6 +10645,9 @@ function parseExamCsv_(rawText, issues, label) {
     end: findQuizCol_(header, ["end time", "endtime", "end"]),
     term: findQuizCol_(header, ["batch", "term"]),
     session: findQuizCol_(header, ["session"]),
+    // Optional: an exam sat at different times by different sections. Most exam
+    // tabs have no such column (one sitting for the whole course).
+    section: findQuizCol_(header, ["section", "group", "grp"]),
     faculty: findQuizCol_(header, ["faculty"]),
     hall: findQuizCol_(header, ["exam hall", "hall", "room", "venue"]),
     examType: findQuizCol_(header, ["exam type", "type"]),
@@ -10481,7 +10667,7 @@ function parseExamCsv_(rawText, issues, label) {
   for (var i = headerRow + 1; i < csv.length; i++) {
     var row = csv[i];
     if (!row) continue;
-    var code = get(row, col.code).toUpperCase();
+    var code = canonicalCourseCode_(get(row, col.code), true);
     if (!code) continue;
     // The Batch/Term column is what separates this term's rows from another term's
     // on a tab the institute shares between terms. When the tab HAS no such column
@@ -10513,24 +10699,30 @@ function parseExamCsv_(rawText, issues, label) {
     var info = COURSE_INFO_[code];
     var courseName = (info && info.name) || get(row, col.name) || code;
 
-    var examRow = [
-      dateObj,
-      range.start,
-      range.end,
-      code,
-      "",                       // Section — exams are common across a course's sections
-      courseName,
-      get(row, col.faculty) || "Unknown",
-      get(row, col.hall),
-      get(row, col.session),
-      get(row, col.examType),
-      get(row, col.instructions)
-    ];
-    // Exact duplicate rows would otherwise become duplicate calendar events.
-    var dupKey = JSON.stringify(examRow);
-    if (seenExamRows[dupKey]) continue;
-    seenExamRows[dupKey] = true;
-    rows.push(examRow);
+    // Usually one sitting for the whole course (section ""). A tab with a Section
+    // column can give each section its own sitting; a joint cell ("A & B") becomes
+    // one row per section, exactly as quizzes do.
+    var examSections = splitSectionCell_(get(row, col.section));
+    for (var es = 0; es < examSections.length; es++) {
+      var examRow = [
+        dateObj,
+        range.start,
+        range.end,
+        code,
+        examSections[es],
+        courseName,
+        get(row, col.faculty) || "Unknown",
+        get(row, col.hall),
+        get(row, col.session),
+        get(row, col.examType),
+        get(row, col.instructions)
+      ];
+      // Exact duplicate rows would otherwise become duplicate calendar events.
+      var dupKey = JSON.stringify(examRow);
+      if (seenExamRows[dupKey]) continue;
+      seenExamRows[dupKey] = true;
+      rows.push(examRow);
+    }
   }
 
   if (col.term === -1) {
@@ -10548,15 +10740,16 @@ function parseExamCsv_(rawText, issues, label) {
   return rows;
 }
 
-// Identity of one exam SITTING — course + day + start + end — used to spot the same
+// Identity of one exam SITTING — course + section + day + start + end — used to spot the same
 // sitting appearing on both tabs. Values are normalized through the same parsers the
 // consumers use, because a sheet round-trip can hand back a Date for one tab's cell
 // and a string for the other's.
 function examSittingKey_(row) {
   var code = row[3] ? row[3].toString().trim().toUpperCase() : "";
+  var sec = row[4] ? row[4].toString().trim().toUpperCase() : "";
   var d = parseSheetDate_(row[0]);
   var day = d ? Utilities.formatDate(d, Session.getScriptTimeZone(), "yyyy-MM-dd") : String(row[0]);
-  return code + "|" + day + "|" + examTimeKey_(row[1]) + "|" + examTimeKey_(row[2]);
+  return code + "|" + sec + "|" + day + "|" + examTimeKey_(row[1]) + "|" + examTimeKey_(row[2]);
 }
 
 function examTimeKey_(v) {
@@ -10620,12 +10813,27 @@ function resetExamRowsMemo_() {
 // Mid-Term/End-Term label comes from examTermLabel_. Rows with unreadable dates or
 // times are skipped.
 //   row: [Date, Start, End, Code, Section, CourseName, Faculty, Hall, Session, ExamType, Instructions]
+// Whether an exam / quiz row's section applies to a student enrolled in
+// `enrolledSections` ({SEC: true}, or {} for a course taken without a section). A
+// row with no section is the whole course's; a sectioned row only reaches students
+// in that section. With no section of their own, a student gets every row — and
+// the caller collapses per-section copies of one sitting.
+function rowSectionApplies_(rowSection, enrolledSections) {
+  var sec = rowSection ? rowSection.toString().trim().toUpperCase() : "";
+  if (!sec || !enrolledSections) return true;
+  if (!Object.keys(enrolledSections).length) return true;
+  return !!enrolledSections[sec];
+}
+
 function appendExamEvents_(prepared, selectedCodes, reminderMinutes) {
   var examRows = getAllExamRows_();
+  // Section-less enrolment + per-section sittings: one event per slot, as for quizzes.
+  var sectionlessExamSeen = {};
   for (var i = 0; i < examRows.length; i++) {
     var row = examRows[i];
     var code = row[3] ? row[3].toString().trim().toUpperCase() : "";
     if (!code || !selectedCodes[code]) continue;
+    if (!rowSectionApplies_(row[4], selectedCodes[code])) continue;
 
     var dateObj = parseSheetDate_(row[0]);
     if (!dateObj) continue;
@@ -10651,6 +10859,11 @@ function appendExamEvents_(prepared, selectedCodes, reminderMinutes) {
     }
     var startTime = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate(), startParse.h, startParse.m, 0);
     var endTime = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate(), endParse.h, endParse.m, 0);
+    if (!Object.keys(selectedCodes[code]).length) {
+      var examSlot = code + "|" + startTime.getTime() + "|" + endTime.getTime();
+      if (sectionlessExamSeen[examSlot]) continue;
+      sectionlessExamSeen[examSlot] = true;
+    }
 
     var info = COURSE_INFO_[code];
     var displayName = (info && info.name) || (row[5] ? row[5].toString().trim() : code);
@@ -10738,6 +10951,7 @@ var GUEST_YEAR_IGNORE_TAGS_ = settingTags_(termValue_("ignoreYearTags", TERM_PRE
 
 function isOurYearRow_(cell) {
   if (!cell) return false;
+  if (namesAnotherBatch_(cell)) return false;
   var v = cell.toString().toUpperCase().replace(/\s+/g, "");
   for (var e = 0; e < GUEST_YEAR_IGNORE_TAGS_.length; e++) {
     if (v.indexOf(GUEST_YEAR_IGNORE_TAGS_[e]) !== -1) return false;
@@ -10792,7 +11006,7 @@ function parseSessionScheduleCsv_(rawText, issues, label) {
   for (var i = headerRow + 1; i < csv.length; i++) {
     var row = csv[i];
     if (!row) continue;
-    var code = get(row, col.code).toUpperCase();
+    var code = canonicalCourseCode_(get(row, col.code), true);
     var date = get(row, col.date);
     if (!code || !date) continue;   // blank or spacer row
 
@@ -10823,19 +11037,24 @@ function parseSessionScheduleCsv_(rawText, issues, label) {
       continue;
     }
 
-    var out = [
-      Utilities.formatDate(dateObj, Session.getScriptTimeZone(), "dd/MM/yyyy"),
-      range.start, range.end, code,
-      get(row, col.section).toUpperCase(),
-      get(row, col.faculty),
-      get(row, col.session)
-    ];
-    // Identical rows would each become their own prepared event, and the diff's
-    // multiset matching would pair both forever — the duplicate never heals.
-    var key = out.slice(0, 5).join("|");
-    if (seen[key]) continue;
-    seen[key] = true;
-    rows.push(out);
+    // Blank / "All" = every section; a joint session ("A & B") is one row per
+    // section, as in the timetable (splitSectionCell_).
+    var sessionSections = splitSectionCell_(get(row, col.section));
+    for (var ss = 0; ss < sessionSections.length; ss++) {
+      var out = [
+        Utilities.formatDate(dateObj, Session.getScriptTimeZone(), "dd/MM/yyyy"),
+        range.start, range.end, code,
+        sessionSections[ss],
+        get(row, col.faculty),
+        get(row, col.session)
+      ];
+      // Identical rows would each become their own prepared event, and the diff's
+      // multiset matching would pair both forever — the duplicate never heals.
+      var key = out.slice(0, 5).join("|");
+      if (seen[key]) continue;
+      seen[key] = true;
+      rows.push(out);
+    }
   }
   if (otherYear && !rows.length) {
     issues.push(label + ": every row belonged to another year — none matched " + GUEST_YEAR_TAGS_.join(" / "));
@@ -11482,9 +11701,10 @@ function parseSheetDate_(val) {
 
 function parseTime_(val) {
   if (val instanceof Date) return { h: val.getHours(), m: val.getMinutes() };
-  var s = val.toString().trim();
+  var s = cleanTimeText_(val);
   if (!s) throw new Error("Empty time value");
-  // Accept only "H", "H:MM", optionally followed by am/pm (any case, optional space).
+  // Accept only "H", "H:MM", optionally followed by am/pm (any case, optional space)
+  // — after cleanTimeText_ has brought "2:00:00 PM", "14.00", "9 a.m." to that shape.
   // Rejects malformed inputs like "9.00" or "3pm extra" so dirty source data fails
   // loudly (callers catch and skip the row) instead of being mis-scheduled.
   var match = s.match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)?$/i);
@@ -11526,8 +11746,8 @@ function normalizeTimeRange_(startRaw, endRaw) {
   } catch (parseErr) {
     return null;
   }
-  var sExplicit = /(am|pm)\s*$/i.test(String(startRaw).trim());
-  var eExplicit = /(am|pm)\s*$/i.test(String(endRaw).trim());
+  var sExplicit = /(am|pm)\s*$/i.test(cleanTimeText_(startRaw));
+  var eExplicit = /(am|pm)\s*$/i.test(cleanTimeText_(endRaw));
   if (!sExplicit && s.h > 0 && s.h < 7) s.h += 12;
   if (!eExplicit && !isValidTimeRange_(s, e) && e.h < 12) e.h += 12;
   if (!isValidTimeRange_(s, e)) return null;
