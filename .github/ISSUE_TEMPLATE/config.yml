@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Setting it up for my batch
+    url: https://github.com/Aniketh896/TermSync-IIM-Sirmaur-Student-Calendar/blob/main/docs/SETUP.md
+    about: Step-by-step setup, or use SETUP_WITH_AI.md with an AI assistant.
+  - name: Something looks wrong in my batch's calendar
+    url: https://github.com/Aniketh896/TermSync-IIM-Sirmaur-Student-Calendar/blob/main/docs/TROUBLESHOOTING.md
+    about: Start with ✓ Check settings and the troubleshooting guide.

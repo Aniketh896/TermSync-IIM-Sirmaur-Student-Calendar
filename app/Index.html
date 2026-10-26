@@ -3512,7 +3512,7 @@
     <div class="card attention-banner info-banner" id="driftCard" style="display:none;">
         <span class="icon">🔁</span>
         <div>
-            <div class="title">The institute has changed your courses</div>
+            <div class="title" id="driftTitle">The institute has changed your courses</div>
             <div class="body" id="driftBody"></div>
             <button class="btn" type="button" id="btnTakeDrift" onclick="fetchElectives(false)">Use the institute's
                 list</button>
@@ -4220,9 +4220,18 @@
             var parts = [];
             if ((d.added || []).length) parts.push("<b>Added:</b> " + d.added.map(name).join("<br>"));
             if ((d.removed || []).length) parts.push("<b>No longer listed:</b> " + d.removed.map(name).join("<br>"));
+            // Section mode: the timetable now runs a course for their section that
+            // they don't have (or no longer runs one they do). Electives: the
+            // institute's allotment moved (add/drop). Same card, worded for each.
+            var bySection = SITE_.selection === "section";
+            var title = document.getElementById("driftTitle");
+            if (title) title.textContent = bySection ? "Your section's courses have changed" : "The institute has changed your courses";
+            var take = document.getElementById("btnTakeDrift");
+            if (take) take.textContent = bySection ? "Use my section's courses" : "Use the institute's list";
             body.innerHTML = parts.join("<br><br>") +
-                "<br><br>Your calendar has <b>not</b> been changed. If this is right, take the " +
-                "institute's list below; if you changed your own selection on purpose, ignore this.";
+                "<br><br>Your calendar has <b>not</b> been changed. If this is right, take " +
+                (bySection ? "your section's list" : "the institute's list") +
+                " below; if you changed your own selection on purpose, ignore this.";
             card.style.display = "";
         }
 
@@ -7804,7 +7813,9 @@
                     '<span class="sdir-roll">' + escapeHtml(r.roll) + '</span>' +
                     '<span class="sdir-name">' + escapeHtml(r.name || (r.onRoster ? "" : "not on roster")) + '</span>' +
                     '</span>' +
-                    '<span class="sdir-cell" title="Listed in the institute\'s elective tabs">' +
+                    '<span class="sdir-cell" title="' + (SITE_.selection === "section"
+                        ? "Their section on the roster gives them courses"
+                        : "Listed in the institute\'s elective tabs") + '">' +
                     mark(r.enrolled) + (r.courses ? '<i>' + r.courses + '</i>' : '') + '</span>' +
                     '<span class="sdir-cell" title="Has ever switched Auto-Sync on">' + mark(r.everUsed) + '</span>' +
                     '<span class="sdir-cell" title="Auto-Sync is on right now">' + mark(r.syncing) + '</span>' +
@@ -9244,7 +9255,7 @@
                 case "enable": return { label: "Enabled sync", cls: "ulog-badge-enable" };
                 case "disable": return { label: "Disabled sync", cls: "ulog-badge-disable" };
                 case "pdf": return { label: "PDF", cls: "ulog-badge-pdf" };
-                case "electives_fetch": return { label: "Elective fetch", cls: "ulog-badge-elec" };
+                case "electives_fetch": return { label: "Courses auto-filled", cls: "ulog-badge-elec" };
                 case "manual_sync": return { label: "Sync now", cls: "ulog-badge-other" };
                 case "report": return { label: "Reported entry", cls: "ulog-badge-other" };
                 case "force_admin_fetch": return { label: "Force fetch", cls: "ulog-badge-other" };

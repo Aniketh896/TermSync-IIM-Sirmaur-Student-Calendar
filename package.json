@@ -2,9 +2,26 @@
   "name": "termsync",
   "version": "1.0.0",
   "private": true,
-  "description": "TermSync: puts each student's institute timetable into their own Google Calendar and keeps it updated. Google Apps Script web app. Created by Aniketh Hotagi.",
+  "description": "TermSync — IIM Sirmaur's student calendar: each student's timetable, quizzes and exams in their own Google Calendar, kept up to date automatically. Unofficial. Created by Aniketh Hotagi.",
   "author": "Aniketh Hotagi (https://www.linkedin.com/in/aniketh-hotagi/)",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aniketh896/TermSync-IIM-Sirmaur-Student-Calendar.git"
+  },
+  "homepage": "https://github.com/Aniketh896/TermSync-IIM-Sirmaur-Student-Calendar#readme",
+  "bugs": {
+    "url": "https://github.com/Aniketh896/TermSync-IIM-Sirmaur-Student-Calendar/issues"
+  },
+  "keywords": [
+    "google-apps-script",
+    "google-calendar",
+    "timetable",
+    "iim-sirmaur"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "test": "node tests/run_all.js",
     "check": "node tests/check_config.js"

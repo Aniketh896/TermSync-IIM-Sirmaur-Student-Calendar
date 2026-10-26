@@ -89,6 +89,12 @@ t.ok(/"Ist year".*KEPT/.test(rep) && /"2nd Year".*ignored/.test(rep), 'and shows
 t.ok(/"MBA 2026-28, PhD26 T-II".*KEPT/.test(rep) && /T-III".*ignored/.test(rep) && /Term-V".*ignored/.test(rep),
   'and which quiz Batch/Term values are kept / ignored');
 
+const dir = W.exec('mba26902@iimsirmaur.ac.in', c => c.getStudentDirectory());   // a SAC member
+const dirRow = r => (dir.rows || []).find(x => x.roll === r) || {};
+t.ok(dir.ok && dirRow('MBA26903').enrolled === true && dirRow('MBA26906').enrolled === false,
+  'the admin student list counts a student as enrolled when their section gives them courses');
+t.ok(!W.fetched.some(u => /pubhtml|electives/i.test(u)), 'and never reaches for an elective sheet in section mode');
+
 t.section('7 · test mode holds everyone else back');
 const testCfg = W.config.replace('var TEST_ONLY_FOR = [];', 'var TEST_ONLY_FOR = ["MBA26902"];');
 const Wt = createWorld({ config: testCfg });

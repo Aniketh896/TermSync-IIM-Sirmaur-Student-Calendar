@@ -97,6 +97,15 @@ async function open(browser, W, email) {
     t.ok(/drive\.google\.com\/file\/d\/TESTFILEIDECO0123456789\/view/.test(co), 'the ECO outline links to its Drive file');
     t.ok(/drive\.google\.com\/drive\/folders\/TESTFOLDERID0123456789/.test(co), 'and the folder link is there');
 
+    t.section('a course added to their section after they enabled');
+    W.USER_PROPS[B].tt_electives_drift = JSON.stringify({ added: ['TOUR'], removed: [] });
+    page = await open(browser, W, B);
+    const drift = await page.evaluate(() => ({ title: document.getElementById('driftTitle').textContent,
+      btn: document.getElementById('btnTakeDrift').textContent, shown: document.getElementById('driftCard').style.display !== 'none' }));
+    t.ok(drift.shown && drift.title === "Your section's courses have changed" && drift.btn === "Use my section's courses",
+      'the card speaks about their section, not an elective list ("' + drift.title + '")');
+    delete W.USER_PROPS[B].tt_electives_drift;
+
     t.section('the maintainer');
     page = await open(browser, W, W.owner);
     const badge = await page.$eval('#specialBadge', e => ({ text: e.textContent.trim(), shown: e.style.display !== 'none' }));

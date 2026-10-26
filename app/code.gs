@@ -3908,28 +3908,45 @@ function getStudentDirectory() {
   // rather than one per viewer. A failure leaves the column as "unknown" (null)
   // rather than a cross — claiming a student has no enrolment when the sheet
   // merely would not load is exactly the mistake this release exists to stop.
+  // In section mode "enrolled" means the roster section gives them courses; in
+  // pick mode there is no list to be on, so the column stays unknown.
   var enrolled = null, enrolCount = {};
-  try {
-    var catalogue = getElectiveCatalogue_();
-    if (catalogue.length) {
-      var codes = [];
-      for (var c = 0; c < catalogue.length; c++) codes.push(catalogue[c].code);
-      var read = getElectiveSectionMaps_(codes);
-      if (!read.missing.length) {
-        enrolled = {};
-        for (var m = 0; m < codes.length; m++) {
-          var map = read.maps[codes[m]];
-          if (!map) continue;
-          var keys = Object.keys(map);
-          for (var k = 0; k < keys.length; k++) {
-            enrolled[keys[k]] = true;
-            enrolCount[keys[k]] = (enrolCount[keys[k]] || 0) + 1;
+  var dirMode = enrolmentMode_();
+  if (dirMode === "section") {
+    var dirIndex = masterDataSectionIndex_();
+    if (Object.keys(dirIndex).length) {
+      enrolled = {};
+      Object.keys(STUDENT_ROSTER_).forEach(function (r) {
+        var picks = sectionCoursesFor_(r.toUpperCase(), STUDENT_ROSTER_[r][1], dirIndex);
+        if (STUDENT_ROSTER_[r][1] && picks.length) {
+          enrolled[r.toUpperCase()] = true;
+          enrolCount[r.toUpperCase()] = picks.length;
+        }
+      });
+    }
+  } else if (dirMode === "electives") {
+    try {
+      var catalogue = getElectiveCatalogue_();
+      if (catalogue.length) {
+        var codes = [];
+        for (var c = 0; c < catalogue.length; c++) codes.push(catalogue[c].code);
+        var read = getElectiveSectionMaps_(codes);
+        if (!read.missing.length) {
+          enrolled = {};
+          for (var m = 0; m < codes.length; m++) {
+            var map = read.maps[codes[m]];
+            if (!map) continue;
+            var keys = Object.keys(map);
+            for (var k = 0; k < keys.length; k++) {
+              enrolled[keys[k]] = true;
+              enrolCount[keys[k]] = (enrolCount[keys[k]] || 0) + 1;
+            }
           }
         }
       }
+    } catch (elErr) {
+      console.warn("Student directory: enrolment unavailable: " + getErrorMessage_(elErr));
     }
-  } catch (elErr) {
-    console.warn("Student directory: enrolment unavailable: " + getErrorMessage_(elErr));
   }
 
   // ── one row per roster student, plus anyone who used the tool but isn't on it ──

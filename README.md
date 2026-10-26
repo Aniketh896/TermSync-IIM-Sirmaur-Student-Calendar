@@ -1,5 +1,9 @@
 # TermSync — IIM Sirmaur's Student Calendar
 
+[![Tests](https://github.com/Aniketh896/TermSync-IIM-Sirmaur-Student-Calendar/actions/workflows/test.yml/badge.svg)](https://github.com/Aniketh896/TermSync-IIM-Sirmaur-Student-Calendar/actions/workflows/test.yml)
+[![Licence: MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
+![Unofficial](https://img.shields.io/badge/status-unofficial%20student%20tool-orange.svg)
+
 **Your class timetable, quizzes and exams in your own Google Calendar — kept up to
 date by itself.**
 
@@ -279,6 +283,7 @@ a new term — follow part B."*
 | `app/appsscript.json` | The permissions it asks for | No |
 | `SETUP_WITH_AI.md` | The script an AI assistant follows to help you | No |
 | `DISCLAIMER.md` | Terms of use | No |
+| `CONTRIBUTING.md`, `CHANGELOG.md`, `SECURITY.md` | For people improving TermSync: how to contribute, what changed, how to report a security problem | — |
 | `docs/` | The guides | — |
 | `tests/` | Automatic checks (`npm test`), and `npm run check` for a filled-in `config.gs` | Only if you change the code |
 
@@ -299,6 +304,7 @@ the **[SAC, IIM Sirmaur](https://www.linkedin.com/company/saciimsirmaur)** and I
 Sirmaur students. The app's footer and PDFs credit the SAC, your batch's maintainer
 and its creator — please keep those credits.
 
-Released under the [MIT licence](LICENSE). TermSync is **unofficial**: it is not run
+Improvements are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) (and never include
+real students' data). Released under the [MIT licence](LICENSE). TermSync is **unofficial**: it is not run
 or endorsed by the institute, and the official timetable and academic calendar
 always come first. See **[DISCLAIMER.md](DISCLAIMER.md)**.
