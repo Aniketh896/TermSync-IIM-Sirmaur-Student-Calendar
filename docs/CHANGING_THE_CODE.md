@@ -17,7 +17,7 @@ from breaking anyone's calendar. AI assistants read it too (via
 immediately.** There's no "deploy to just me". A mistake in `code.gs` reaches the
 whole batch within 30 minutes. Hence:
 
-1. Test on your computer first (`npm test`).
+1. Check it on your computer first (`npm run verify`).
 2. Then test on yourself in Apps Script with `TEST_ONLY_FOR`.
 3. Only then let the batch have it.
 
@@ -35,23 +35,36 @@ whole batch within 30 minutes. Hence:
    npm install
    ```
 
+   In a git checkout this also switches on a check that runs `npm run verify` before
+   every `git push`, so nothing unverified can be published by accident. On GitHub,
+   the same gate runs on every push and pull request (the **Verify** badge on the
+   README).
+
 ---
 
 ## The routine, every change
 
 1. **Make the change** in `app/code.gs` and/or `app/Index.html`. If you use an AI
    assistant, give it the whole folder and describe what you want.
-2. **Run the tests:**
+2. **Bump `BUILD_ID_`** near the top of `code.gs` — today's date plus a letter, e.g.
+   `"2026-11-02a"`, then `"2026-11-02b"` for the next one that day.
+3. **Run the pre-deploy gate:**
 
    ```sh
-   npm test
+   npm run verify
    ```
 
-   It must end with **"All … test files passed."** Any FAIL means don't paste.
-   (Tests run against `tests/fixtures/test.config.gs` — an invented batch — never
-   your real settings.)
-3. **Bump `BUILD_ID_`** near the top of `code.gs` — today's date plus a letter, e.g.
-   `"2026-11-02a"`, then `"2026-11-02b"` for the next one that day.
+   It must end with **`✅ VERIFIED — safe to deploy`**. Anything else lists what to
+   fix — **don't paste until it says VERIFIED.** It checks, in one go:
+   - the four app files are valid code (a single missing bracket blanks the app);
+   - the permissions in `appsscript.json` are unchanged (otherwise every student has
+     to approve TermSync again) and the web app still runs as each student;
+   - every server function the page calls, every spreadsheet-menu item and every
+     timer still points at a function that exists;
+   - `BUILD_ID_` was bumped if `code.gs` or `Index.html` changed;
+   - every test passes (`npm test` — run on an invented batch, never your real data);
+   - your own settings, if you keep them here as `my-config.gs` (and the office's
+     timetable as `timetable.csv` — both ignored by git): a full dry run.
 4. **Turn on test mode:** in Apps Script → `config.gs` → `TEST_ONLY_FOR = ["<your roll>"]`.
 5. **Paste** the changed files into Apps Script (select all, delete, paste) → **Save**.
 6. **Deploy → Manage deployments → ✏️ → Version: New version → Deploy.**
@@ -98,7 +111,7 @@ Never put real students' data in `tests/`.
   names and roll numbers. If you keep the project in git, save it as `my-config.gs`
   (already in `.gitignore`).
 - Improvements to `code.gs` / `Index.html` that would help other batches are welcome:
-  fork the repository on GitHub, make the change, run `npm test`, and open a pull
+  fork the repository on GitHub, make the change, run `npm run verify`, and open a pull
   request. Please keep the credits (the creator's name in the code headers, footer and
   PDF).
 

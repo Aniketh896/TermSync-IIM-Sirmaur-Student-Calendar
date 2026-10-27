@@ -215,8 +215,8 @@ kept and only values changed. Then check it:
 
 **If you can run code** (a terminal or code tool with Node.js):
 1. Get the repository (`git clone https://github.com/Aniketh896/TermSync-IIM-Sirmaur-Student-Calendar`,
-   or the ZIP), `npm install`, then **`npm test`** — it must end "All … test files
-   passed".
+   or the ZIP), `npm install`, then **`npm run verify`** — it must end
+   "✅ VERIFIED".
 2. Save the new file (e.g. `my-config.gs`) and run **`npm run check -- my-config.gs`**,
    or with their timetable CSV **`npm run check -- my-config.gs timetable.csv`** (also
    runs the fetch and works out every student's calendar).
@@ -339,7 +339,18 @@ outgoing maintainer's copy keeps running for their own batch.
 
 ## Part E · Changing the code
 
-Follow `docs/CHANGING_THE_CODE.md` and `AGENTS.md`: make the change, **`npm test`
-must pass**, add a test for it, bump `BUILD_ID_`, test on themselves with
-`TEST_ONLY_FOR`, then go live. If you can't run `npm test`, say so — and insist on test
-mode before anyone else gets the change.
+Follow `docs/CHANGING_THE_CODE.md` and `AGENTS.md`:
+
+1. Make the change, and add or update a test for it.
+2. Bump `BUILD_ID_`.
+3. Run **`npm run verify`**. It must end with **`✅ VERIFIED — safe to deploy`**. If it
+   says NOT READY, fix what it lists and run it again — **never hand over code for
+   deployment before it says VERIFIED.** Show the student the final lines of its
+   output.
+4. Only then guide them: test mode (`TEST_ONLY_FOR` = their roll) → paste the changed
+   files → Save → Deploy a new version → check on themselves → `TEST_ONLY_FOR = []` →
+   Save → Deploy again.
+
+If you can't run code, say so plainly: the student must run `npm run verify` on their
+computer (`docs/CHANGING_THE_CODE.md` → *One-time setup*), or, at the very least, use
+test mode and check their own calendar before anyone else gets the change.

@@ -2,7 +2,7 @@
 
 ## How it was tested
 
-- [ ] `npm test` passes
+- [ ] `npm run verify` says ✅ VERIFIED
 - [ ] Added or updated a test for the change
 - [ ] (if you run a live copy) Tried it on yourself with `TEST_ONLY_FOR`
 

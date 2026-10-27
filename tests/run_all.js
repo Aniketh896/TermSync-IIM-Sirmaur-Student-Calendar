@@ -6,7 +6,7 @@
 const { spawnSync } = require('child_process');
 const path = require('path');
 
-const TESTS = ['settings_test', 'first_year_test', 'check_config_test', 'page_test'];
+const TESTS = ['settings_test', 'first_year_test', 'check_config_test', 'verify_test', 'page_test'];
 let failed = 0;
 for (const name of TESTS) {
   const t0 = Date.now();

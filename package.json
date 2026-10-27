@@ -24,7 +24,9 @@
   },
   "scripts": {
     "test": "node tests/run_all.js",
-    "check": "node tests/check_config.js"
+    "verify": "node tests/verify.js",
+    "check": "node tests/check_config.js",
+    "prepare": "node tests/install_hooks.js"
   },
   "devDependencies": {
     "puppeteer-core": "^23.0.0"

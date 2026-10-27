@@ -23,7 +23,7 @@ held to one rule: **it must not be able to break a student's calendar.**
 
 ```sh
 npm install
-npm test          # must end with "All … test files passed"
+npm run verify    # the pre-deploy gate — must end with "✅ VERIFIED"
 ```
 
 - Add or update a test for every behaviour you change — usually in

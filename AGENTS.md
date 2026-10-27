@@ -22,15 +22,24 @@ programmer. Everything below is for changing the code.
 
 ## Commands
 
-- `npm test` — every test; must pass before a change is done.
+- **`npm run verify` — the pre-deploy gate. A change is done only when it ends with
+  `✅ VERIFIED — safe to deploy`.** It checks syntax of all four app files, that
+  `appsscript.json`'s scopes and web-app settings are unchanged, that every
+  `google.script.run` call / menu item / timer handler resolves to a real public
+  function, that `BUILD_ID_` was bumped when `code.gs` or `Index.html` changed, runs
+  every test, and dry-runs `my-config.gs` (+ `timetable.csv`) if present. Also run by
+  the pre-push hook and by GitHub Actions.
+- `npm test` — just the tests.
 - `npm run check -- <config.gs> [timetable.csv]` — validates a filled-in `config.gs`
   (syntax, settings, and with a CSV of the office timetable a full offline fetch +
   every-student pre-flight). Ends with `RESULT: READY` or `RESULT: NOT READY`.
 
 ## Rules
 
-- **`npm test` must pass** before any change is called done. Add a check for every
-  behaviour you change or fix, usually in `tests/first_year_test.js`.
+- **Never tell the user a change is ready, or to paste / deploy it, until
+  `npm run verify` says VERIFIED** — and show them its last lines. If you can't run
+  it, say so plainly and have them run it. Add a check for every behaviour you change
+  or fix, usually in `tests/first_year_test.js`; bump `BUILD_ID_`.
 - **Batch-specific values belong in `config.gs`**, never hardcoded in `code.gs` or
   `Index.html`. A new setting: add it to `config.gs` with a plain-English comment
   (what it is, where to find it, an example), read it in the settings section at the

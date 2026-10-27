@@ -7,3 +7,8 @@ node_modules/
 my-config.gs
 *.private.gs
 .claude/settings.local.json
+# Downloads of the institute's sheets used for `npm run check` / `npm run verify`:
+# real faculty names and timetables, never for a public repository.
+timetable.csv
+my-timetable.csv
+*.private.csv

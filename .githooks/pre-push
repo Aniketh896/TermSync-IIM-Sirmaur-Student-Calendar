@@ -1,0 +1,10 @@
+#!/bin/sh
+# Runs the pre-deploy gate before anything is pushed (installed by `npm install`,
+# see tests/install_hooks.js). To push anyway — only if you are sure — use
+# `git push --no-verify`.
+echo "Running npm run verify before pushing…"
+if ! npm run --silent verify; then
+  echo ""
+  echo "Push stopped: npm run verify did not pass. Fix what it lists above, then push again."
+  exit 1
+fi

@@ -1,6 +1,6 @@
 # TermSync — IIM Sirmaur's Student Calendar
 
-[![Tests](https://github.com/Aniketh896/TermSync-IIM-Sirmaur-Student-Calendar/actions/workflows/test.yml/badge.svg)](https://github.com/Aniketh896/TermSync-IIM-Sirmaur-Student-Calendar/actions/workflows/test.yml)
+[![Verify](https://github.com/Aniketh896/TermSync-IIM-Sirmaur-Student-Calendar/actions/workflows/verify.yml/badge.svg)](https://github.com/Aniketh896/TermSync-IIM-Sirmaur-Student-Calendar/actions/workflows/verify.yml)
 [![Licence: MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
 ![Unofficial](https://img.shields.io/badge/status-unofficial%20student%20tool-orange.svg)
 
@@ -19,6 +19,8 @@ date by itself.**
 
 > 🤖 **AI assistants:** if someone asked you to help them set up or run TermSync,
 > read this README, then follow **[SETUP_WITH_AI.md](SETUP_WITH_AI.md)** step by step.
+> If you change any code, follow **[AGENTS.md](AGENTS.md)**: nothing is ready to deploy
+> until `npm run verify` says ✅ VERIFIED.
 
 <p align="center">
   <img src="docs/images/student-view.png" alt="TermSync on a phone: the term, the student's name, and their courses already selected from their section" width="340">
@@ -296,15 +298,18 @@ a new term — follow part B."*
 | `DISCLAIMER.md` | Terms of use | No |
 | `CONTRIBUTING.md`, `CHANGELOG.md`, `SECURITY.md` | For people improving TermSync: how to contribute, what changed, how to report a security problem | — |
 | `docs/` | The guides | — |
-| `tests/` | Automatic checks (`npm test`), and `npm run check` for a filled-in `config.gs` | Only if you change the code |
+| `tests/` | Automatic checks: `npm run verify` (everything, before deploying a change), `npm test`, and `npm run check` for a filled-in `config.gs` | Only if you change the code |
 
 When a newer version comes out, replace `code.gs` and `Index.html`, and keep your
 `config.gs`.
 
-**On a computer with [Node.js](https://nodejs.org):** `npm install`, then `npm test`
-checks the app, and `npm run check -- my-config.gs timetable.csv` checks a filled-in
-`config.gs` against a downloaded copy of the office's timetable before you paste it
-anywhere.
+**Changing the code?** On a computer with [Node.js](https://nodejs.org): `npm install`,
+make the change (yourself or with an AI assistant), then run **`npm run verify`**. It
+checks everything — the code, the permissions, every link between the page and the
+server, the version number, every test, and your own settings — and must say
+**✅ VERIFIED** before anything is pasted into Apps Script. It also runs before every
+`git push` and on GitHub. Details: [docs/CHANGING_THE_CODE.md](docs/CHANGING_THE_CODE.md).
+(`npm run check -- my-config.gs timetable.csv` checks just a filled-in `config.gs`.)
 
 ---
 

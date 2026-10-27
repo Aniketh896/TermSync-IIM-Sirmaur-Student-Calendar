@@ -1,0 +1,29 @@
+# Runs the pre-deploy gate (npm run verify: syntax, permissions, entry points,
+# BUILD_ID_, and every test) on each push and pull request. A change is only safe
+# to paste into Apps Script when this is green (see docs/CHANGING_THE_CODE.md).
+name: Verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0   # the BUILD_ID_ check compares with the branch a pull request targets
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      # page_test.js finds the runner's Google Chrome at /usr/bin/google-chrome.
+      - run: npm run verify
+        env:
+          TERMSYNC_VERIFY_BASE: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || '' }}

@@ -2,6 +2,17 @@
 
 All notable changes to TermSync. Versions match `BUILD_ID_` in `app/code.gs`.
 
+## Unreleased — the pre-deploy gate
+
+- `npm run verify`: one command to run after any change and before deploying —
+  syntax of all four app files, unchanged permissions and web-app settings, every
+  page → server call, menu item and timer still resolving, `BUILD_ID_` bumped, every
+  test, and a dry run of `my-config.gs` + `timetable.csv` if present.
+- Runs before every `git push` (installed by `npm install`) and on GitHub for every
+  push and pull request. AI assistants are told not to call a change ready until it
+  says VERIFIED.
+- `timetable.csv` / `my-timetable.csv` are git-ignored.
+
 ## 2026-10-27a — reading the sheets, whatever the term or batch
 
 - One set of reading rules for every sheet: sections ("Sec A", joint sessions
